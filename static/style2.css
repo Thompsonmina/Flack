@@ -72,11 +72,20 @@ a:focus {
 #sidebar ul.components {
     padding: 20px 0;
     border-bottom: 1px solid #47748b;
+
+}
+
+#sidebar ul.components-bottom {
+    padding: 5px;
 }
 
 #sidebar ul p {
     color: #fff;
     padding: 10px;
+    padding-top:0px; 
+    font-size: 1.2em;
+    border-bottom: 1px solid #47748b;
+
 }
 
 #sidebar ul li a {
