@@ -1,0 +1,265 @@
+.content
+{
+	background-color: lightgrey;
+	min-height: 100vh;
+}
+
+.holder
+{
+	margin-top: 40px;
+	padding: 100px;
+}
+
+.welcome
+{
+	box-shadow: 0 10px 7px 0 rgba(0,0,0,0.2);
+	background-color: RoyalBlue;;
+	border: 1px solid CornflowerBlue;
+	width: 400px;
+	padding: 50px;
+}
+
+@keyframes bold
+{
+	from {
+		font-size: 0em;
+	}
+	to {
+		font-size: 2.2em;
+	}
+}
+
+.welcome h1
+{
+	animation-name: bold;
+	animation-duration: 1s;
+	animation-fill-mode: forwards;
+
+}
+
+.sidemenu
+{
+	height: 100%;
+	width: 250px;
+	position: fixed;
+	z-index: 1;
+	background-color: RoyalBlue;
+	top: 40px;
+	left:0;
+	overflow-y: auto;
+
+}
+
+.sectionholder
+{
+	padding-left: 20px;
+	padding-right: 20px;
+	font-size: 22px;
+
+}
+
+.userprofile
+{
+	display: flex;
+	justify-content:space-between;
+	align-items: center;
+}
+.channelflex
+{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#user 
+{
+	font-size: 1.25em;
+}
+
+.buttn
+{
+ 	display: inline-block;
+ 	text-align: left;
+ 	border: none;
+  	background-color: inherit;
+  	padding: 5px 0px 5px 60px; 
+  	margin: 0px;
+  	font-size: 20px;
+  	cursor: pointer;
+  	color: #212529;
+  	width: 300px;
+  	transition-duration: 0.4s;
+}
+
+.iconbutton
+{
+	display: inline-block;
+	text-align: right;
+	border: none;
+	background-color: inherit;
+	cursor: pointer;
+	color: inherit;
+	font-size: 20px;
+	transition-duration: 0.4s;
+}
+.buttn:hover, .iconbutton:hover {background: CornflowerBlue;}
+.buttn:focus {background: LightSteelBlue; outline:0px;}
+.iconbutton:focus {outline: 0px;}
+
+
+
+.channelbanner
+{
+	border-bottom: 1px solid rgba(0,0,0,.1);
+	height: 90px;
+	width: 100%;
+	position: fixed;
+	z-index: 1;
+	background-color: lightgrey;
+	top: 40px;
+	left: 250px;
+	
+	
+}
+
+.channelbanner h5
+{
+	padding-left: 30px;
+}
+
+
+.textplace
+{
+	position: fixed;
+	width: 1250px;
+	height: 80px;
+	bottom: 30px;
+	left: 250px;
+	padding-left: 60px;
+}
+
+.textplace textarea
+{
+	overflow: hidden;
+	margin: 0;
+	padding-left: 20px;
+	padding-top: 10px;
+	border: 0;
+	outline: 0;
+	width: 100%;
+	resize: none;
+	font-size: 20px;
+	border: 1px solid CornflowerBlue;
+	border-radius: 5px;
+}
+
+#sendbuttondiv
+{
+	position: fixed;
+	bottom: 38px;
+	left: 1500px;
+	height: 70px;
+	width: 100px
+}
+
+#sendtextbttn
+{
+	border: 1px solid CornflowerBlue;
+	border-radius: 10px;
+	width: 100%;
+	height: 100%;
+	background-color: RoyalBlue;
+}
+
+.chatspace
+{
+	position: fixed;
+	height: 550px;
+	width: 1460px;
+	top: 130px;
+	left: 250px;
+	overflow-y: auto;
+	padding: 30px;
+	
+}
+
+.bubbleWrapper
+{
+	padding: 10px 10px;
+	display: flex;
+	justify-content: flex-end;
+	flex-direction: column;
+	align-self: flex-end;
+  	color: #fff;
+}
+
+.inlineContainer
+{
+  display: inline-flex;
+}
+
+.inlineContainer.own
+{
+  flex-direction: row-reverse;
+}
+
+.ownBubble 
+{
+	min-width: 60px;
+	max-width: 700px;
+	padding: 14px 18px;
+  	margin: 6px 8px;
+	background-color: #002147;
+	border-radius: 16px 16px 0 16px;
+	border: 1px solid #54788e;
+ 
+}
+.otherBubble {
+	min-width: 60px;
+	max-width: 700px;
+	padding: 14px 18px;
+  	margin: 6px 8px;
+	background-color: #2774AE;
+	border-radius: 16px 16px 16px 0;
+	border: 1px solid #54788e;
+  
+}
+.own {
+	align-self: flex-end;
+}
+.other {
+	align-self: flex-start;
+}
+span.own,
+span.other{
+  font-size: 16px;
+  color: darkslategrey;
+}
+
+
+@media only screen and (max-width: 1000px) {
+	.channelbanner
+	{
+		height: 90px;
+		width: 72vw;	
+	}
+
+	.textplace
+	{
+		width: 560px;
+		left: 250px;
+	}
+
+	#sendbuttondiv
+	{
+		left: 810px;
+	}	
+
+	.chatspace
+	{
+		width: 680px;
+		left: 250px;	
+		padding: 20px;
+	}		
+
+}
