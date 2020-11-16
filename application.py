@@ -32,6 +32,10 @@ def welcome():
 	""" render the login page"""
 	return render_template("welcome.html")
 
+@app.route("/newclient")
+def new():
+	return render_template("newclient.html")
+
 @app.route("/send", methods=["POST"])
 def send():
 	""" gets called by the ajax request to bypass sign up page if user already exists"""
@@ -148,6 +152,8 @@ def leftRoom(data):
 	""" remove a user from a room """
 	room = data["channel"]
 	leave_room(room)
+
+
 
 @socketio.on("got a message")
 def addMessage(data):
