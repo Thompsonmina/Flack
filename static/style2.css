@@ -24,6 +24,7 @@ a:focus {
     transition: all 0.3s;
 }
 
+
 .navbar {
     padding: 0px;
     background: #fff;
@@ -152,16 +153,61 @@ a.article:hover {
 
 #content {
     width: calc(100% - 250px);
-    padding: 40px;
-    min-height: 100vh;
+    padding: 25px;
+    padding-top: 0px;
+    height: 100vh;
     transition: all 0.3s;
     position: absolute;
     top: 0;
     right: 0;
+
 }
 
 #content.active {
     width: 100%;
+}
+
+.header{
+    padding: 20px;
+    border-bottom: 1px solid #47748b;
+    margin-bottom: 10px;
+
+}
+
+#sidebarCollapse{
+    display: none;
+}
+
+.text-small {
+  font-size: 0.9rem;
+}
+
+.message-box{
+    position: absolute;
+    bottom: 10px;
+    width: calc(100% - 50px);
+    border: 1px solid #47748b;
+
+}
+
+
+.chat-box {
+  height: calc(100% - 130px);
+  overflow-y: scroll;
+}
+
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.with{
+  max-width: 50%;
+  width: fit-content;
+}
+input::placeholder {
+  font-size: 0.9rem;
+  color: #999;
 }
 
 /* ---------------------------------------------------
@@ -181,7 +227,18 @@ a.article:hover {
     #content.active {
         width: calc(100% - 250px);
     }
+    #sidebarCollapse{
+        display: block;
+    }
     #sidebarCollapse span {
         display: none;
+    }
+
+    .header{
+        padding-left: 0;        
+    }
+
+    .header h4{
+        padding-left: 10px;
     }
 }
