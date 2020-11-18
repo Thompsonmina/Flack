@@ -1,86 +1,31 @@
 {% extends "newlayout.html" %}
 
-{% block script %}
-<!-- <script>
-	// check if username is already stored 
-	if (localStorage.getItem("username")){
-
-		// send the username to the server and redirect
-		const request = new XMLHttpRequest();
-		request.open("POST", "/send");
-
-		request.onload = data => {
-			if (request.responseURL) 
-			{	
-				window.location.href = request.responseURL;
-			}
-		}
-
-		const data = new FormData();
-		data.append("username",localStorage.getItem("username"));
-		data.append("newuser", false);
-		request.send(data);
-	}
-
-	document.addEventListener("DOMContentLoaded", () => {
-		// when a user is inputting the username
-		document.querySelector("#save").onsubmit = () => {
-			const username = document.querySelector("#username").value;
-
-			// store the username in local storage
-			localStorage.setItem("username", username);
-			// store thee default general channel in username also
-			localStorage.setItem("channel", "general");
-			
-			// send the username to the server and redirect
-			const request = new XMLHttpRequest();
-			request.open("POST", "/send");
-
-			request.onload = data => {
-				if (request.responseURL) 
-				{	
-					window.location.href = request.responseURL;
-				}
-			}
-
-			const data = new FormData();
-			data.append("username",localStorage.getItem("username"));
-			data.append("newuser", true)
-			request.send(data);
-
-			return false;
-		}
-	})
-</script> -->
-{% endblock %}
-
 {% block content %}
 <div class="container-fluid content">
-  
-	<div class="row d-flex justify-content-center align-items-center h-100">
+  	{% if error %}
+  		<div class="alert alert-secondary" role="alert">
+  			{{ error }}
+		</div>
+  	{% endif %}
 
+	<div class="row d-flex justify-content-center align-items-center h-100">
 		<div class="welcome">
-			
 			<div class="mb-3 d-flex justify-content-center">				
 			<h2> Create an Account </h2>
 			</div>
 
 			<form id="register" method="post" action="{{ url_for('register') }}">
 	  		<div class="form-group">
-	    		
 	    		<input id="username" name="username" usetype="text" class=" mb-2 form-control"aria-describedby="username" placeholder="Enter username" required="true">
 	    		<input id="username" name="password" usetype="password" class="mb-2 form-control"aria-describedby="password" placeholder="Enter Password" required="true">
 	    		<input id="username" name="confirm_password" usetype="password" class="form-control"aria-describedby="password" placeholder="Confirm Password" required="true">
-	   
 	  		</div>
 	  		<button type="submit" class="btn btn-light">Register</button>
 	  		<div class>
                 Already registered? <a href="{{ url_for('login') }}"><b> Log in</b></a>
             </div>
 			</form>
-
 		</div>
-
 	</div>
 </div>
 {% endblock %}

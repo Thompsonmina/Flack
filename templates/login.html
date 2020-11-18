@@ -56,11 +56,13 @@
 
 {% block content %}
 <div class="container-fluid content">
-  
+  	{% if error %}
+  		<div class="alert alert-secondary" role="alert">
+  			{{ error }}
+		</div>
+  	{% endif %}
 	<div class="row d-flex justify-content-center align-items-center h-100">
-
 		<div class="welcome">
-			
 			<div>				
 			<h1> Flack </h1>
 			<p> ...a simple chat service</p>
@@ -68,19 +70,15 @@
 
 			<form id="save" method="post" action="{{ url_for('login') }}">
 	  		<div class="form-group">
-	    		
-	    		<input id="username" name="username" usetype="text" class=" mb-2 form-control"aria-describedby="username" placeholder="Enter username" required="true">
-	    		<input id="username" name="password" usetype="password" class="form-control"aria-describedby="password" placeholder="Enter Password" required="true">
-	   
+	    		<input id="username" name="username" type="text" class=" mb-2 form-control"aria-describedby="username" placeholder="Enter username">
+	    		<input id="username" name="password" type="password" class="form-control"aria-describedby="password" placeholder="Enter Password">
 	  		</div>
 	  		<button type="submit" class="btn btn-light">Log in</button>
 	  		<div class>
                 No account? no worries <a href="{{ url_for('register') }}"><b> Register here</b></a>
             </div>
 			</form>
-
 		</div>
-
 	</div>
 </div>
 {% endblock %}

@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, session, render_template, url_for, request, redirect, jsonify
-from flask_login import LoginManager
+from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from flask_mongoengine import MongoEngine
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
@@ -35,22 +35,59 @@ socketio = SocketIO(app)
 # users = []
 from models import User
 
-@app.route("/")
+
+
+@app.route("/", methods=["GET", "POST"])
 def login():
-	""" render the login page"""
-	return render_template("login.html")
+	""" handle login functionality"""
+	error = ""
+	if current_user.is_authenticated == True:
+		return redirect(url_for("new"))
 
-@app.route("/register")
+	if request.method == "POST":
+		username = request.form["username"]
+		password = request.form["password"]
+		if not (username and password):
+			error = "one or all input fields are blank"
+		else:
+			user = User.objects(username=username).first()
+			if user:
+				if user.check_password(password):
+					login_user(user)
+					return redirect(url_for("new"))
+				else:
+					error = "incorrect password"
+			else:
+				error = "username does not exist"	
+
+	return render_template("login.html", error=error)
+
+@app.route("/register", methods=["GET", "POST"])
 def register():
-	"handle registration functionality"
-	return render_template("register.html")
+	"""handle registration functionality"""
+	error = "" # will show errors on template if any exist
+	if request.method == "POST":
+		username = request.form["username"]
+		correctpassword = request.form["password"] if request.form["password"] == request.form["confirm_password"] else ""
+		if not (username and correctpassword):
+			error = "invalid credentials, passwords do not match"
+		else:
+			# check if user is unique and proceed
+			if User.objects(username=username).first() is None:
+				user = User(username=username)
+				user.set_password(request.form["password"])
+				user.save()
+				return redirect(url_for("login"))
+			else:
+				error = "username already exists, choose another one"
 
-@app.route("/old")
-def oldlogin():
-	return render_template("welcome.html")
+	return render_template("register.html", error=error)
 
-def register():
-	pass
+@app.route("/logout")
+@login_required
+def logout():
+	logout_user()
+	return redirect(url_for("login"))
 
 @app.route("/newclient")
 def new():
