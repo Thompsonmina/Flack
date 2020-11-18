@@ -1,22 +1,27 @@
 .content
 {
 	background-color: lightgrey;
-	min-height: 100vh;
-}
-
-.holder
-{
-	margin-top: 40px;
-	padding: 100px;
 }
 
 .welcome
 {
 	box-shadow: 0 10px 7px 0 rgba(0,0,0,0.2);
-	background-color: RoyalBlue;;
-	border: 1px solid CornflowerBlue;
-	width: 400px;
+	background-color: #7386D5;
+	border: 1px solid #7386D5;
+	width: 500px;
 	padding: 50px;
+	color: #fff;
+}
+
+@media (max-width: 768px) {
+	.content
+	{
+		background-color: #7386D5;
+	}
+	.welcome {
+		box-shadow: none;
+		width: 400px;
+	}
 }
 
 @keyframes bold
@@ -34,9 +39,15 @@
 	animation-name: bold;
 	animation-duration: 1s;
 	animation-fill-mode: forwards;
+	margin-bottom: 0;
 
 }
 
+.welcome p
+{
+	color:#fff;
+}
+/*
 .sidemenu
 {
 	height: 100%;
@@ -235,3 +246,4 @@ span.other{
   font-size: 16px;
   color: darkslategrey;
 }
+*/

@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "newlayout.html" %}
 
 {% block script %}
 <!-- <script>
@@ -54,15 +54,10 @@
 </script> -->
 {% endblock %}
 
-{% block title %} Welcome to Flack {% endblock %}
-
 {% block content %}
-  
-
 <div class="container-fluid content">
   
-	
-	<div class="row d-flex justify-content-center align-items-center holder">
+	<div class="row d-flex justify-content-center align-items-center h-100">
 
 		<div class="welcome">
 			
@@ -71,13 +66,17 @@
 			<p> ...a simple chat service</p>
 			</div>
 
-			<form id="save" method="get" action="">
+			<form id="save" method="post" action="{{ url_for('login') }}">
 	  		<div class="form-group">
-	    		<label for="exampleInputEmail1">What would you like to be called</label>
-	    		<input id="username" name="username" usetype="text" class="form-control"aria-describedby="username" placeholder="Enter username" required="true">
+	    		
+	    		<input id="username" name="username" usetype="text" class=" mb-2 form-control"aria-describedby="username" placeholder="Enter username" required="true">
+	    		<input id="username" name="password" usetype="password" class="form-control"aria-describedby="password" placeholder="Enter Password" required="true">
 	   
 	  		</div>
-	  		<button type="submit" class="btn btn-primary">Log in</button>
+	  		<button type="submit" class="btn btn-light">Log in</button>
+	  		<div class>
+                No account? no worries <a href="{{ url_for('register') }}"><b> Register here</b></a>
+            </div>
 			</form>
 
 		</div>
