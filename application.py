@@ -6,7 +6,7 @@ from flask_mongoengine import MongoEngine
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
 # get chat objects from module
-from chatobjects import Chat, PublicChannel, PrivateChannel
+# from chatobjects import Chat, PublicChannel, PrivateChannel
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
@@ -33,14 +33,14 @@ socketio = SocketIO(app)
 
 # # global users list
 # users = []
-from models import User
+from models import User, PublicChannel
 
 
 
 @app.route("/", methods=["GET", "POST"])
 def login():
 	""" handle login functionality"""
-	error = ""
+	error = "" # will show errors on template if any exist
 	if current_user.is_authenticated == True:
 		return redirect(url_for("new"))
 
@@ -91,7 +91,25 @@ def logout():
 
 @app.route("/newclient")
 def new():
-	return render_template("newclient.html")
+
+	public_channels = PublicChannel.getchannels()
+	return render_template("newclient.html", username=current_user.username,
+		public=public_channels)
+
+@app.route("/is_channel_valid")
+def isChannelValid():
+	channel = request.args.get("channel")
+	
+	channel = PublicChannel.objects(name=channel).first()
+	if channel is not None:
+		return jsonify({"success": False, "message": "channel already exists"})
+	
+	return jsonify({"success": True})
+
+@app.route("/delete_channels")
+def deletechannel():
+	PublicChannel.objects.delete()
+	return jsonify({"success": True})
 
 @app.route("/send", methods=["POST"])
 def send():
@@ -140,8 +158,8 @@ def delete():
 def createChannel(data):
 	""" listen on the add newchannel socket, add a new channel to server and emit the new channel"""
 	channel = data["name"]
-	channels[channel] = PublicChannel()
-	emit("show newchannel", {"channel": channel}, broadcast=True)
+	channel = PublicChannel(name=channel).save()
+	emit("show newchannel", {"channel": channel.name}, broadcast=True)
 
 @socketio.on("add new privatechannel")
 def createAPrivateChannel(data):

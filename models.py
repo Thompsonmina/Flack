@@ -28,6 +28,12 @@ class PublicChannel(db.Document):
 	name = db.StringField(required=True, max_length=15, unique=True)
 	chats = db.EmbeddedDocumentListField(Chat)
 
+	@classmethod
+	def getchannels(cls):
+		""" returns a list of all the public channel names"""
+		channels = cls.objects.only('name')
+		return [channel.name for channel in channels]
+
 class PrivateChannel(db.Document):
 	name = db.StringField(required=True, max_length=15, unique=True)
 	chats = db.EmbeddedDocumentListField(Chat)
