@@ -16,6 +16,7 @@ class User(UserMixin, db.Document):
 		self.password_hash = generate_password_hash(password)
 
 	def check_password(self, password):
+		""" check if the password is the correct one""" 	
 		return check_password_hash(self.password_hash, password)
 
 class Chat(db.EmbeddedDocument):

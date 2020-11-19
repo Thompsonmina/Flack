@@ -1,2 +1,2 @@
-from application import User
+from application import User, db
 
