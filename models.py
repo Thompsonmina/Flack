@@ -10,6 +10,11 @@ import json
 def load_user(user_id):
 	return User.objects(pk=user_id).first()
 
+
+"""  
+	mongo db Odm interface
+"""
+
 DEFAULTCHANNEL = "General"
 
 class User(UserMixin, db.Document):
@@ -34,6 +39,7 @@ class Chat(db.EmbeddedDocument):
 	date = db.DateTimeField(default=datetime.datetime.utcnow())
 
 class PublicChannel(db.Document):
+	""" represents the public channels internally"""
 	name = db.StringField(required=True, max_length=15, unique=True)
 	chats = db.EmbeddedDocumentListField(Chat)
 
@@ -43,13 +49,20 @@ class PublicChannel(db.Document):
 		channels = cls.objects.only('name')
 		return [channel.name for channel in channels]
 
-	def addChat(self, chatdict):
-		""" adds a single chat document to the lists of chats"""
+	def addChat(self, **chatdict):
+		""" adds a single chat document to the lists of chats
+		chats args are passed as kwargs
+		"""
 		try: 
 			self.chats.create(**chatdict)
 			self.chats.save()
 		except:
 			raise
+
+	def getlastchat(self):
+		""" returns the last added chat object as a dict"""
+		chat = self.chats[-1]
+		return {"sender":chat.sender, "date":chat.date.isoformat(), "message":chat.message}
 
 	def getChats(self):
 		""" returns a sorted list of chat dicts"""

@@ -19,7 +19,7 @@
             <div class="media with ml-auto mb-3 pr-2">
               <div class="media-body">
                 <p class="small mb-0 text-muted">{{ this.sender }}</p>
-                <div class="bg-primary rounded py-1 pl-2 mb-2">
+                <div class="bg-primary rounded py-1 pl-2 pr-2 mb-2">
                   <p class="text-small mb-0 text-white">{{ this.message }}</p>
                 </div>
                 <p class="small text-muted">{{ this.sender }} {{this.date}}</p>
@@ -31,7 +31,7 @@
             <div class="media with mb-3">
               <div class="media-body ml-3">
                 <p class="small mb-0 text-muted">{{ this.sender }}</p>
-                <div class="bg-success rounded py-1 pl-2 mb-2">
+                <div class="bg-success rounded py-1 pl-2 pr-2 mb-2">
                   <p class="text-small mb-0 text-white">{{ this.message }} surely what has thou become to the world</p>
                 </div>
                 <p class="small text-muted"> {{this.date}}</p>
@@ -126,9 +126,6 @@
 
         <div class="chat-box">
        
-	      
-
-	       
 
   <div class="media with ml-auto mb-3 pr-2">
               <div class="media-body">
@@ -166,10 +163,10 @@
 
       <!-- Typing area -->
       
-      	<form action="#" class="bg-light">
+      	<form id="sentmssg" action="" class="bg-light">
       		<div class="message-box">
 		        <div class="input-group">
-		          <input type="text" placeholder="Type a message" aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-3 bg-light">
+		          <input type="text" id="message" placeholder="Type a message" aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-3 bg-light">
 		          <div class="input-group-append">
 		            <button id="button-addon2" type="submit" class="btn btn-link"> <i class="fa fa-paper-plane"></i></button>
 		          </div>
@@ -191,9 +188,9 @@
                 theme: "minimal"
             });
 
-            $(".chat-box").mCustomScrollbar({
-                theme: "minimal"
-            });
+            // $(".chat-box").mCustomScrollbar({
+            //     theme: "minimal"
+            // });
 
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar, #content').toggleClass('active');

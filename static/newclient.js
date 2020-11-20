@@ -31,6 +31,26 @@ document.addEventListener("DOMContentLoaded", () =>
 			getChats(socket, this.name)
 			}; 
 	});
+
+	document.querySelector("#sentmssg").onsubmit = () =>{
+
+		const message = document.querySelector("#message").value;
+		// reset the textbox
+		document.querySelector("#message").value = "";
+		
+		if (message.length >= 1){  // send only if message is not blank
+			
+			// emit the single chat's details to the server
+			console.log("message", message);
+			const user = username;
+			a = document.getElementsByName(lastChannel)[0];
+			socket.emit("got a message", {"message":message, 
+				"sender":user, "channel":lastChannel, 
+				"type":a.dataset.type});
+		}
+		return false;
+	};
+
 	// when connected configure
 	socket.on("connect", function() {
 		console.log("connected")
@@ -85,6 +105,22 @@ document.addEventListener("DOMContentLoaded", () =>
 
 	// 	});
 
+	// wait for message that was typed  from server and show to only people currently on the channel
+	socket.on("show message", data => {
+		const singlemessagelist = [data];
+		// use the same template that handles a list of multiple chat dicts but this time passing only 1 item
+		const template = Handlebars.compile(document.querySelector("#chatstemplate").innerHTML);		
+		const message = template({"messages": singlemessagelist});
+			
+		console.log('got here boss')
+		// add the message to the chat window 
+		chatspace = document.querySelector(".chat-box")
+		console.log(chatspace)
+		chatspace.innerHTML += message; 
+		chatspace.scrollTop = chatspace.scrollHeight;
+
+	});	
+
 	// wait for show newchannel event and add a new channel button
 	socket.on("show newchannel", data => {
 		// create a new button and set the relevant information
@@ -105,23 +141,6 @@ document.addEventListener("DOMContentLoaded", () =>
 		document.querySelector(".channelbuttons").appendChild(li);
 	});
 });
-
-// // helper function that checks the occurence of a channel button and returns it,
-// // public channel buttons can only have 1 occurence but private can as many occurences
-// // so a user may have a multiple private channels with the same name.
-// function channelOccurence(channel, bttnClassname){
-// 	console.log(channel);
-// 	let occurence = 0;
-// 	document.querySelectorAll(`.${bttnClassname}`).forEach(btn =>{
-// 		console.log(btn.innerText);
-// 		if (btn.innerText === channel) 
-// 		{	
-// 			occurence += 1;
-// 		}
-// 	});
-// 	return occurence;
-// }
-
 
 function leavechannel(socket, channel){
 

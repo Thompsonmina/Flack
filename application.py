@@ -198,10 +198,6 @@ def getChats():
 	# if channel doesn't exist send a failure 	
 	else:
 		return jsonify({"success": False})
-		
-@socketio.on('connect')
-def connect():
-    print("we in niggas")
 
 @socketio.on("join")
 def joinedRoom(data):
@@ -218,21 +214,25 @@ def leftRoom(data):
 	leave_room(room)
 
 
-
 @socketio.on("got a message")
 def addMessage(data):
 	""" adds a message that was just typed by a user to the channel its on and emits it to be shown only to users currently on that channel """
-	time = data["time"]
-	user = data["user"]
+	sender = data["sender"]
 	message = data["message"]
 	channel = data["channel"]
 	typeOfchannel = data["type"]
-	chat = Chat(message, time, user) # create a new chat with extracted details
+
+	# chat = Chat(message, time, user) # create a new chat with extracted details
 	
 	if typeOfchannel == "private":
 		privateChannels[channel].addChat(chat)
 	else:
-		channels[channel].addChat(chat) # add chat to channel
+		channel = PublicChannel.objects(name=channel).first()
+		if channel:
+			# add chat to channel
+			channel.addChat(sender=sender, message=message)
+		print("message sent", channel)
 
 	# emit the message to the client to be displayed to only those currently in the channel
-	emit("show message", chat._asdict(), room=channel)
+	emit("show message", channel.getlastchat(), broadcast=True)
+	print(channel.getlastchat())
