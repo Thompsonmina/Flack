@@ -35,8 +35,6 @@ socketio = SocketIO(app)
 # users = []
 from models import User, PublicChannel
 
-
-
 @app.route("/", methods=["GET", "POST"])
 def login():
 	""" handle login functionality"""
@@ -54,12 +52,13 @@ def login():
 			if user:
 				if user.check_password(password):
 					login_user(user)
+					print(current_user.lastchannel)
+
 					return redirect(url_for("new"))
 				else:
 					error = "incorrect password"
 			else:
 				error = "username does not exist"	
-
 	return render_template("login.html", error=error)
 
 @app.route("/register", methods=["GET", "POST"])
@@ -93,8 +92,7 @@ def logout():
 def new():
 
 	public_channels = PublicChannel.getchannels()
-	return render_template("newclient.html", username=current_user.username,
-		public=public_channels)
+	return render_template("newclient.html", public=public_channels)
 
 @app.route("/is_channel_valid")
 def isChannelValid():

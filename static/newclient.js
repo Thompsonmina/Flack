@@ -1,6 +1,8 @@
 // global username and the last channel accessed 
-const username = localStorage.getItem("username"); 
-let lastChannel = localStorage.getItem("channel") || "general";
+const username = document.querySelector("#userinfo").dataset.username
+let lastChannel = document.querySelector("#userinfo").dataset.lastchannel
+
+console.log(username, lastChannel)
 
 // register a helper fumction to handlebar that helps to differientiate btw the user and others
 Handlebars.registerHelper("isCurrentUser", function(name)
@@ -25,7 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	{
 		lastChannel = "general";
 	}
-
+	l = [{'message':'my name is not consequential for this missioim', 'date':28324, 'user':'mina'}]
+	showChats("general", l)
 
 	// // display the chats of the last channel the user was on, on load
 	// getChats(socket, lastChannel);
@@ -42,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			}; 
 
 	});
+
 
 	// when connected configure
 	socket.on("connect", () => {
@@ -70,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		    			}
 
 		    			
+
 		    		})
 		    	}
 	    	};
@@ -204,22 +209,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // }
 
-// // gets the messages from the server and adds it to the channel button
-// // takes the socket, the name of the channel, and an optional ispublic boolean arguement 
+// gets the messages from the server and adds it to the channel button
+// takes the socket, the name of the channel, and an optional ispublic boolean arguement 
 // function getChats(socket, channelname, ispublic = true){ 
 
 // 	// leave the channel the user was coming from
 // 	leavechannel(socket, localStorage.getItem("channel"))
 
-// 	const request = new XMLHttpRequest();
-// 	request.open("POST", "/getChats");
 
-// 	// when messages have been recieved join the channel then display the chats
-// 	request.onload = () => {
-// 		// parse response
-// 		const data = JSON.parse(request.responseText)
-// 		if (data.success) // render chats
-// 		{
+// 	// send channel data to server to recieve the channel's chats
+// 	const data = new FormData();
+// 	data.append("channel", channelname);
+// 	data.append("ispublic", ispublic)
+		
+// 	fetch("/getChats", {
+// 		method: "POST",
+// 		body: data
+// 	})
+// 	.then(response => response.json())
+// 	.then(data => {
+// 		if (data.success){ // render chats
+	
 // 			const messages = data.messages;
 // 			joinchannel(socket, channelname);
 
@@ -230,39 +240,32 @@ document.addEventListener("DOMContentLoaded", () => {
 // 			console.log(channelname)
 // 			localStorage.setItem("channel", channelname);						 
 // 		}
-// 		else {console.log("something is wrong");}
-// 	}
-	
-// 	// send channel data to server to recieve the channel's chats
-// 	const data = new FormData();
-// 	data.append("channel", channelname);
-// 	data.append("ispublic", ispublic)
-// 	request.send(data);	
-	
+// 		else {console.log("something is wrong");}			
+// 	})		
 // }
 
-// // displays chats on the window, takes a channel, and its messages as an arguement
-// function showChats(channel, listOFMessages){
+// displays chats on the window, takes a channel, and its messages as an arguement
+function showChats(channel, listOFMessages){
 
-// 	// if the messages is not empty
-// 	if (listOFMessages.length > 0){
+	// if the messages is not empty
+	if (listOFMessages.length > 0){
 
-// 		// compile handle bar template that takes in a list of message dictionaries as input and renders it
-// 		const template = Handlebars.compile(document.querySelector("#chatstemplate").innerHTML);
-// 		const messages = template({"messages": listOFMessages});
+		// compile handle bar template that takes in a list of message dictionaries as input and renders it
+		const template = Handlebars.compile(document.querySelector("#chatstemplate").innerHTML);
+		const messages = template({"messages": listOFMessages});
 
-// 		// add the message to the dom
-// 		document.querySelector(".chatspace").innerHTML = messages;
-// 	}
-// 	else
-// 	 { 
-// 	 	// if a channel has no messages display nothing
-// 		document.querySelector(".chatspace").innerHTML = "";
-// 	}
+		// add the message to the dom
+		document.querySelector(".chat-box").innerHTML = messages;
+	}
+	else
+	 { 
+	 	// if a channel has no messages display nothing
+		document.querySelector(".chat-box").innerHTML = "";
+	}
 
-// 	// change name to reflect current channel
-// 	document.querySelector(".channelbanner h5").innerHTML = channel.replace(/-\d+$/, "");
-// }
+	// change name to reflect current channel
+	document.querySelector("#channelname-header").innerText = channel;
+}
 
 // // displays a create private channel modal and retrieves a list of members and the channel name from the user
 // // it then emits the data to the server

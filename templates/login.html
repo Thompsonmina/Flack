@@ -70,8 +70,8 @@
 
 			<form id="save" method="post" action="{{ url_for('login') }}">
 	  		<div class="form-group">
-	    		<input id="username" name="username" type="text" class=" mb-2 form-control"aria-describedby="username" placeholder="Enter username">
-	    		<input id="username" name="password" type="password" class="form-control"aria-describedby="password" placeholder="Enter Password">
+	    		<input id="username" name="username" type="text" class=" mb-2 form-control"aria-describedby="username" required="true" placeholder="Enter username">
+	    		<input id="password" name="password" type="password" class="form-control"aria-describedby="password" required="true" placeholder="Enter Password">
 	  		</div>
 	  		<button type="submit" class="btn btn-light">Log in</button>
 	  		<div class>
