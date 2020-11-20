@@ -54,7 +54,7 @@ def login():
 					login_user(user)
 					print(current_user.lastchannel)
 
-					return redirect(url_for("new"))
+					return redirect(url_for("client"))
 				else:
 					error = "incorrect password"
 			else:
@@ -88,10 +88,11 @@ def logout():
 	logout_user()
 	return redirect(url_for("login"))
 
-@app.route("/newclient")
-def new():
-
+@app.route("/client")
+def client():
+	DEFAULTCHANNEL = "General"
 	public_channels = PublicChannel.getchannels()
+	current_user.lastchannel = current_user.lastchannel if current_user.lastchannel in public_channels else DEFAULTCHANNEL
 	return render_template("newclient.html", public=public_channels)
 
 @app.route("/is_channel_valid")
@@ -109,48 +110,48 @@ def deletechannel():
 	PublicChannel.objects.delete()
 	return jsonify({"success": True})
 
-@app.route("/send", methods=["POST"])
-def send():
-	""" gets called by the ajax request to bypass sign up page if user already exists"""
-	user = request.form.get("username")
-	if (request.form.get("newuser") == "true"):
-		session["username"] = user
-		users.append(user)
+# @app.route("/send", methods=["POST"])
+# def send():
+# 	""" gets called by the ajax request to bypass sign up page if user already exists"""
+# 	user = request.form.get("username")
+# 	if (request.form.get("newuser") == "true"):
+# 		session["username"] = user
+# 		users.append(user)
 		
-	return redirect(f"/client/{user}")
+# 	return redirect(f"/client/{user}")
 
-@app.route("/client/<string:username>")
-def clientView(username):
-	""" the main application view """
-	if username == session["username"]: # ensure that a user can only access ther url
-		return render_template("client.html", channels=channels.keys(), isLoggedIn=True)
-	else: 
-		return redirect("/error")
+# @app.route("/client/<string:username>")
+# def clientView(username):
+# 	""" the main application view """
+# 	if username == session["username"]: # ensure that a user can only access ther url
+# 		return render_template("client.html", channels=channels.keys(), isLoggedIn=True)
+# 	else: 
+# 		return redirect("/error")
 
-@app.route("/error")
-def errorView():
-	return render_template("error.html")
+# @app.route("/error")
+# def errorView():
+# 	return render_template("error.html")
 
-@app.route("/getUsers", methods=["POST"])
-def getUsers():
-	""" gets all the users registered on the app apart from the user making the request"""
-	otherusers = [user for user in users if user != session["username"]]
-	return jsonify({"users": otherusers})
+# @app.route("/getUsers", methods=["POST"])
+# def getUsers():
+# 	""" gets all the users registered on the app apart from the user making the request"""
+# 	otherusers = [user for user in users if user != session["username"]]
+# 	return jsonify({"users": otherusers})
 	
-@app.route("/leave")
-def delete():
-	""" remove the user from every private room and delete the user's session data"""
-	user = session["username"]
-	for channel in privateChannels.values():
-		if channel.isMember(user):
-			channel.removeMember(user)
-	try:
-	 	users.remove(user)
-	except Exception as e:
-	 	raise e
-	finally: 
-		session.clear()
-		return redirect("/")
+# @app.route("/leave")
+# def delete():
+# 	""" remove the user from every private room and delete the user's session data"""
+# 	user = session["username"]
+# 	for channel in privateChannels.values():
+# 		if channel.isMember(user):
+# 			channel.removeMember(user)
+# 	try:
+# 	 	users.remove(user)
+# 	except Exception as e:
+# 	 	raise e
+# 	finally: 
+# 		session.clear()
+# 		return redirect("/")
 
 @socketio.on("add newchannel")
 def createChannel(data):
@@ -181,36 +182,26 @@ def getAUserPrivateChannels():
 
 @app.route("/getChats", methods=["POST"])
 def getChats():
-	""" returns the messages that belongs to a channel"""
+	""" returns the messages that belongs to a channel if the 
+	channel is valid"""
 	channel = request.form.get("channel")
 	ispublic = request.form.get("ispublic")
 	
-	# if a channel is successfully retrieved
-	if channel:
-		if ispublic == "true": 
-			try: # check if key exists in public channels
-				channels[channel]
-			except KeyError:
-				return jsonify({"error": "KeyError", "success":False})
-		else:
-			try: # check if key exists in private channels
-				privateChannels[channel]
-			except KeyError:
-				return jsonify({"error": "KeyError", "success":False})
-
-		# get all the chats stored in a channel
-		if ispublic == "true":
-			chatstuples = channels[channel].getChats()
-		else:
-			chatstuples = privateChannels[channel].getChats()
+	channel = PublicChannel.objects(name=channel).first()
+	if channel and ispublic:
+		current_user.lastchannel = channel.name
+		current_user.save()
+		messages = channel.getChats()
 		
-		# convert each chat to a dict to be passed to the client
-		messages =list(map(lambda chat: chat._asdict(), chatstuples)) 
 		return jsonify({"success": True, "messages":messages})
 
 	# if channel doesn't exist send a failure 	
 	else:
 		return jsonify({"success": False})
+		
+@socketio.on('connect')
+def connect():
+    print("we in niggas")
 
 @socketio.on("join")
 def joinedRoom(data):

@@ -1,7 +1,10 @@
 from application import db, login_manager
-from datetime import datetime
+import datetime
+import pytz
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+
+import json
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -28,7 +31,7 @@ class User(UserMixin, db.Document):
 class Chat(db.EmbeddedDocument):
 	sender = db.StringField(required=True)
 	message = db.StringField(required=True)
-	date = db.DateTimeField(default=datetime.utcnow)
+	date = db.DateTimeField(default=datetime.datetime.utcnow())
 
 class PublicChannel(db.Document):
 	name = db.StringField(required=True, max_length=15, unique=True)
@@ -49,8 +52,13 @@ class PublicChannel(db.Document):
 			raise
 
 	def getChats(self):
-		self.chats
-
+		""" returns a sorted list of chat dicts"""
+		chats = []	
+		for x in sorted(self.chats, key=lambda x: x.date):
+			x.date = x.date.isoformat()
+			chats.append({"sender":x.sender, "date":x.date, "message":x.message})
+		
+		return chats
 
 	def __str__(self):
 		return f"<{self.name}>"
