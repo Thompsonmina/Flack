@@ -32,7 +32,7 @@
               <div class="media-body ml-3">
                 <p class="small mb-0 text-muted">{{ this.sender }}</p>
                 <div class="bg-success rounded py-1 pl-2 pr-2 mb-2">
-                  <p class="text-small mb-0 text-white">{{ this.message }} surely what has thou become to the world</p>
+                  <p class="text-small mb-0 text-white">{{ this.message }}</p>
                 </div>
                 <p class="small text-muted"> {{this.date}}</p>
               </div>
@@ -80,12 +80,11 @@
                             <a class="public"  name="{{ channel }}" data-type="public" href="#">{{channel}}</a>
                         </li>
                     {% endfor %}
-                    <li> <a href="">hishe</a></li>
                 </ul>
             </li>
            
             <li>
-                <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Private Channels</a>
+                <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Direct Messages</a>
                 <ul class="collapse list-unstyled" id="pageSubmenu">
                     <li>
                         <a href="#">Page 1</a>
@@ -105,6 +104,13 @@
                 <a href="#" id="create-public" data-kind="public">create channel</a>
                 
             </li>
+
+            <li class=>
+                <!-- class="iconbutton" id="create-publicbtn" data-kind="public -->
+                <a href="#" id="create-private" data-kind="private">Send a Dm</a>
+                
+            </li>
+
             <li>
                 <a id="forget" href="{{ url_for('logout') }}">Log out</a>
             </li>
@@ -172,10 +178,7 @@
 		          </div>
 		        </div>
               </div>
-
       	</form>
-
-
     </div>
 </div>
 {% endblock %}
@@ -187,10 +190,6 @@
             $("#sidebar").mCustomScrollbar({
                 theme: "minimal"
             });
-
-            // $(".chat-box").mCustomScrollbar({
-            //     theme: "minimal"
-            // });
 
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar, #content').toggleClass('active');

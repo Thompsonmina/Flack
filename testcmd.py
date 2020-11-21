@@ -1,2 +1,2 @@
-from application import User, db, PublicChannel
+from application import User, db, PublicChannel, Pair
 

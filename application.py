@@ -3,7 +3,7 @@ import os
 from flask import Flask, session, render_template, url_for, request, redirect, jsonify
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from flask_mongoengine import MongoEngine
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room, rooms
 
 # get chat objects from module
 # from chatobjects import Chat, PublicChannel, PrivateChannel
@@ -16,24 +16,9 @@ app.config["MONGODB_SETTINGS"] = {
 }
 db = MongoEngine(app)
 login_manager = LoginManager(app)
-socketio = SocketIO(app)
+socketio = SocketIO(app,  manage_session=False)
 
-# # Configure session to use filesystem
-# app.config["SESSION_PERMANENT"] = False
-# app.config["SESSION_TYPE"] = "filesystem"
-# Session(app)
-
-# # global dictionary of public channels 
-# channels = dict()
-# channels["general"] = PublicChannel() # default general channel
-# channels["general"].addChat(Chat("welcome, this is the default channel", "", "Admin"))
-
-# # global dictionary of private channels
-# privateChannels = dict()
-
-# # global users list
-# users = []
-from models import User, PublicChannel
+from models import User, PublicChannel, Pair
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -89,6 +74,7 @@ def logout():
 	return redirect(url_for("login"))
 
 @app.route("/client")
+@login_required
 def client():
 	DEFAULTCHANNEL = "General"
 	public_channels = PublicChannel.getchannels()
@@ -153,32 +139,32 @@ def deletechannel():
 # 		session.clear()
 # 		return redirect("/")
 
-@socketio.on("add newchannel")
-def createChannel(data):
-	""" listen on the add newchannel socket, add a new channel to server and emit the new channel"""
-	channel = data["name"]
-	channel = PublicChannel(name=channel).save()
-	emit("show newchannel", {"channel": channel.name}, broadcast=True)
+# @socketio.on("add newchannel")
+# def createChannel(data):
+# 	""" listen on the add newchannel socket, add a new channel to server and emit the new channel"""
+# 	channel = data["name"]
+# 	channel = PublicChannel(name=channel).save()
+# 	emit("show newchannel", {"channel": channel.name}, broadcast=True)
 
-@socketio.on("add new privatechannel")
-def createAPrivateChannel(data):
-	""" listen on the add new private channel socket, add a new private channel to the server, store the members and emit the new channel"""
-	channelname = data["name"]
-	channel = PrivateChannel(data["members"])
-	privateChannels[channelname] = channel
-	emit("show new privatechannel", {"channel": channelname, "members": channel.getAllMembers()}, broadcast=True)
+# @socketio.on("add new privatechannel")
+# def createAPrivateChannel(data):
+# 	""" listen on the add new private channel socket, add a new private channel to the server, store the members and emit the new channel"""
+# 	channelname = data["name"]
+# 	channel = PrivateChannel(data["members"])
+# 	privateChannels[channelname] = channel
+# 	emit("show new privatechannel", {"channel": channelname, "members": channel.getAllMembers()}, broadcast=True)
 
-@app.route("/getPrivateChannels", methods=["POST"])
-def getAUserPrivateChannels():
-	""" return the private channels a user belongs to"""
-	user = request.form.get("user")
-	channels = []
-	
-	for channel in privateChannels:
-		if privateChannels[channel].isMember(user):
-			channels.append(channel)
+# @app.route("/getPrivateChannels", methods=["POST"])
+# def getAUserPrivateChannels():
+# 	""" return the private channels a user belongs to"""
+# 	user = request.form.get("user")
+# 	channels = []
 
-	return jsonify({"channels": channels})
+# 	for channel in privateChannels:
+# 		if privateChannels[channel].isMember(user):
+# 			channels.append(channel)
+
+# 	return jsonify({"channels": channels})
 
 @app.route("/getChats", methods=["POST"])
 def getChats():
@@ -205,14 +191,18 @@ def joinedRoom(data):
 		can get a broadcast message """
 	username = data["username"]
 	room = data["channel"]
+	print(rooms(), "before join")
 	join_room(room)
+	print(rooms())
+
 
 @socketio.on("leave")
 def leftRoom(data):
 	""" remove a user from a room """
 	room = data["channel"]
+	print(rooms(), "before leave")
 	leave_room(room)
-
+	print(rooms())
 
 @socketio.on("got a message")
 def addMessage(data):
@@ -234,5 +224,8 @@ def addMessage(data):
 		print("message sent", channel)
 
 	# emit the message to the client to be displayed to only those currently in the channel
-	emit("show message", channel.getlastchat(), broadcast=True)
+	emit("show message", channel.getlastchat(), room=channel.name)
 	print(channel.getlastchat())
+
+if __name__ == '__main__':
+    socketio.run(app)
