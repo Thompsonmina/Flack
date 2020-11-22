@@ -1,57 +1,6 @@
 {% extends "newlayout.html" %}
 
 {% block script %}
-<!-- <script>
-	// check if username is already stored 
-	if (localStorage.getItem("username")){
-
-		// send the username to the server and redirect
-		const request = new XMLHttpRequest();
-		request.open("POST", "/send");
-
-		request.onload = data => {
-			if (request.responseURL) 
-			{	
-				window.location.href = request.responseURL;
-			}
-		}
-
-		const data = new FormData();
-		data.append("username",localStorage.getItem("username"));
-		data.append("newuser", false);
-		request.send(data);
-	}
-
-	document.addEventListener("DOMContentLoaded", () => {
-		// when a user is inputting the username
-		document.querySelector("#save").onsubmit = () => {
-			const username = document.querySelector("#username").value;
-
-			// store the username in local storage
-			localStorage.setItem("username", username);
-			// store thee default general channel in username also
-			localStorage.setItem("channel", "general");
-			
-			// send the username to the server and redirect
-			const request = new XMLHttpRequest();
-			request.open("POST", "/send");
-
-			request.onload = data => {
-				if (request.responseURL) 
-				{	
-					window.location.href = request.responseURL;
-				}
-			}
-
-			const data = new FormData();
-			data.append("username",localStorage.getItem("username"));
-			data.append("newuser", true)
-			request.send(data);
-
-			return false;
-		}
-	})
-</script> -->
 {% endblock %}
 
 {% block content %}

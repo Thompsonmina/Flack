@@ -81,12 +81,12 @@ class Pair(db.Document):
 	chats = db.EmbeddedDocumentListField(Chat)
 	person1 = db.ReferenceField(User,
 					unique=True, 
-					reverse_delete_rule=db.NULLIFY,
+					reverse_delete_rule=db.CASCADE,
 					required=True
 				)
 	person2 = db.ReferenceField(User, 
 					unique_with="person1",
-					reverse_delete_rule=db.NULLIFY,
+					reverse_delete_rule=db.CASCADE,
 					required=True
 				)
 	hasBeenModified = db.BooleanField(default=False)

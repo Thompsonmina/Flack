@@ -25,7 +25,7 @@ def login():
 	""" handle login functionality"""
 	error = "" # will show errors on template if any exist
 	if current_user.is_authenticated == True:
-		return redirect(url_for("new"))
+		return redirect(url_for("client"))
 
 	if request.method == "POST":
 		username = request.form["username"]
@@ -78,8 +78,9 @@ def logout():
 def client():
 	DEFAULTCHANNEL = "General"
 	public_channels = PublicChannel.getchannels()
+	directs = current_user.people
 	current_user.lastchannel = current_user.lastchannel if current_user.lastchannel in public_channels else DEFAULTCHANNEL
-	return render_template("newclient.html", public=public_channels)
+	return render_template("newclient.html", public=public_channels, directs=directs)
 
 @app.route("/is_channel_valid")
 def isChannelValid():
@@ -96,23 +97,36 @@ def deletechannel():
 	PublicChannel.objects.delete()
 	return jsonify({"success": True})
 
-# @app.route("/send", methods=["POST"])
-# def send():
-# 	""" gets called by the ajax request to bypass sign up page if user already exists"""
-# 	user = request.form.get("username")
-# 	if (request.form.get("newuser") == "true"):
-# 		session["username"] = user
-# 		users.append(user)
-		
-# 	return redirect(f"/client/{user}")
 
-# @app.route("/client/<string:username>")
-# def clientView(username):
-# 	""" the main application view """
-# 	if username == session["username"]: # ensure that a user can only access ther url
-# 		return render_template("client.html", channels=channels.keys(), isLoggedIn=True)
-# 	else: 
-# 		return redirect("/error")
+@app.route("/getChats", methods=["POST"])
+def getChats():
+	""" returns the messages that belongs to a channel if the 
+	channel is valid"""
+	channel = request.form.get("channel")
+	ispublic = request.form.get("ispublic")
+	
+	if ispublic == "true":
+		print("entered public")
+		channel = PublicChannel.objects(name=channel).first()
+		if channel:
+			current_user.lastchannel = channel.name
+			current_user.save()
+			messages = channel.getChats()
+		else:
+			return jsonify({"success": False})
+	else:
+		# fetch a Pair messages (direct messages)
+		print("entered private")
+		otheruser = User.objects(username=channel).first()
+		if otheruser:
+			user = User.objects(username=current_user.username).get()
+			pair = Pair.getAPair(user, otheruser)
+			messages = pair.getChats()
+		else:
+			return jsonify({"success": False})
+		
+	# send the messages
+	return jsonify({"success": True, "messages":messages})
 
 # @app.route("/error")
 # def errorView():
@@ -139,51 +153,34 @@ def deletechannel():
 # 		session.clear()
 # 		return redirect("/")
 
-# @socketio.on("add newchannel")
-# def createChannel(data):
-# 	""" listen on the add newchannel socket, add a new channel to server and emit the new channel"""
-# 	channel = data["name"]
-# 	channel = PublicChannel(name=channel).save()
-# 	emit("show newchannel", {"channel": channel.name}, broadcast=True)
+@socketio.on("add newchannel")
+def createChannel(data):
+	""" listen on the add newchannel socket, add a new channel to server and emit the new channel"""
+	channel = data["name"]
+	channel = PublicChannel(name=channel).save()
+	emit("show newchannel", {"channel": channel.name}, broadcast=True)
 
-# @socketio.on("add new privatechannel")
-# def createAPrivateChannel(data):
-# 	""" listen on the add new private channel socket, add a new private channel to the server, store the members and emit the new channel"""
-# 	channelname = data["name"]
-# 	channel = PrivateChannel(data["members"])
-# 	privateChannels[channelname] = channel
-# 	emit("show new privatechannel", {"channel": channelname, "members": channel.getAllMembers()}, broadcast=True)
-
-# @app.route("/getPrivateChannels", methods=["POST"])
-# def getAUserPrivateChannels():
-# 	""" return the private channels a user belongs to"""
-# 	user = request.form.get("user")
-# 	channels = []
-
-# 	for channel in privateChannels:
-# 		if privateChannels[channel].isMember(user):
-# 			channels.append(channel)
-
-# 	return jsonify({"channels": channels})
-
-@app.route("/getChats", methods=["POST"])
-def getChats():
-	""" returns the messages that belongs to a channel if the 
-	channel is valid"""
-	channel = request.form.get("channel")
-	ispublic = request.form.get("ispublic")
+@socketio.on("add new private pair")
+def createADirectMessagePair(data):
+	""" listen on the add new private channel socket, add a new private channel to the server, store the members and emit the new channel"""
+	otheruser = data["name"]
+	otheruser = User.objects(username=otheruser).first()
 	
-	channel = PublicChannel.objects(name=channel).first()
-	if channel and ispublic:
-		current_user.lastchannel = channel.name
-		current_user.save()
-		messages = channel.getChats()
-		
-		return jsonify({"success": True, "messages":messages})
+	# fetching the user again because currentuser is not compatible with Pair
+	user = User.objects(username=current_user.username).get()
 
-	# if channel doesn't exist send a failure 	
+	if otheruser and otheruser.username not in current_user.people:
+		pair = Pair(person1=user, person2=otheruser)
+		pair.save()
+		emit("show new private pair",{
+				"name": otheruser.username, 
+				"pair":[current_user.username,otheruser.username]
+				},
+			broadcast=True
+		)
+		print("dm created bro")
 	else:
-		return jsonify({"success": False})
+		emit("error", {"message": "pair not created"})
 
 @socketio.on("join")
 def joinedRoom(data):
@@ -194,7 +191,6 @@ def joinedRoom(data):
 	print(rooms(), "before join")
 	join_room(room)
 	print(rooms())
-
 
 @socketio.on("leave")
 def leftRoom(data):

@@ -13,16 +13,15 @@
 <template id="chatstemplate" type="text/x-handlebars-template">
     {% raw -%}
     {{#each messages}}
-        {{#if (isCurrentUser this.user) }}
+        {{#if (isCurrentUser this.sender) }}
             
              <!-- Reciever Message-->
             <div class="media with ml-auto mb-3 pr-2">
               <div class="media-body">
-                <p class="small mb-0 text-muted">{{ this.sender }}</p>
-                <div class="bg-primary rounded py-1 pl-2 pr-2 mb-2">
+                <div class="bg-primary rounded py-2 pl-2 pr-2 mb-2">
                   <p class="text-small mb-0 text-white">{{ this.message }}</p>
                 </div>
-                <p class="small text-muted">{{ this.sender }} {{this.date}}</p>
+                <p class="small text-muted">{{this.date}}</p>
               </div>
             </div>
 
@@ -31,7 +30,7 @@
             <div class="media with mb-3">
               <div class="media-body ml-3">
                 <p class="small mb-0 text-muted">{{ this.sender }}</p>
-                <div class="bg-success rounded py-1 pl-2 pr-2 mb-2">
+                <div class="bg-success rounded py-2 pl-2 pr-2 mb-2">
                   <p class="text-small mb-0 text-white">{{ this.message }}</p>
                 </div>
                 <p class="small text-muted"> {{this.date}}</p>
@@ -73,7 +72,7 @@
             <p><b>{{ current_user.username }}</b></p>
             <li>
                 <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Public Channels</a>
-                <ul class="collapse list-unstyled channelbuttons" id="homeSubmenu">
+                <ul class="collapse list-unstyled channel-links" id="homeSubmenu">
                     
                     {% for channel in public %}
                         <li>
@@ -85,16 +84,12 @@
            
             <li>
                 <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Direct Messages</a>
-                <ul class="collapse list-unstyled" id="pageSubmenu">
-                    <li>
-                        <a href="#">Page 1</a>
-                    </li>
-                    <li>
-                        <a href="#">Page 2</a>
-                    </li>
-                    <li>
-                        <a href="#">Page 3</a>
-                    </li>
+                <ul class="collapse list-unstyled directmessage-links" id="pageSubmenu">
+                    {% for name in directs %}
+                        <li>
+                            <a class="private"  name="{{ name }}" data-type="private" href="#">{{ name }}</a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </li>
         </ul>
