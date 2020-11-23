@@ -37,6 +37,10 @@ class User(UserMixin, db.Document):
 			
 			return other
 
+	def addToPairNames(self, pairname):
+		if pairname not in self.pairnames:
+			self.pairnames.append(pairname)
+
 	def __str__(self):
 		return f"<{self.username}>"
 
@@ -89,7 +93,6 @@ class Pair(db.Document):
 	pairname = db.StringField()
 	chats = db.EmbeddedDocumentListField(Chat)
 	person1 = db.ReferenceField(User,
-					unique=True, 
 					reverse_delete_rule=db.CASCADE,
 					required=True
 				)
@@ -113,8 +116,8 @@ class Pair(db.Document):
 	def save(self):
 		def addthemselves():
 			self.pairname = self.generate_pairname()
-			self.person1.pairnames.append(self.pairname)
-			self.person2.pairnames.append(self.pairname)
+			self.person1.addToPairNames(self.pairname)
+			self.person2.addToPairNames(self.pairname)
 			self.person1.save()
 			self.person2.save()
 
@@ -129,9 +132,11 @@ class Pair(db.Document):
 		super().save()
 		
 	def delete(self):
-		x = self.person1.pairnames.index(self.pairname)
-		y = self.person2.pairnames.index(self.pairname)
-
+		try:
+			x = self.person1.pairnames.index(self.pairname)
+			y = self.person2.pairnames.index(self.pairname)
+		except ValueError:
+			return -1
 		self.person1.pairnames.pop(x)
 		self.person2.pairnames.pop(y)
 

@@ -69,6 +69,7 @@ class UserModelTests(Config):
 
 
 
+
 class PublicChannelModelTests(Config):
 	@classmethod
 	def setUpClass(cls):
@@ -173,25 +174,37 @@ class PairModelTests(Config):
 		self.brian.pairnames[1:] = []		
 		self.pair.chats = []
 				
-	# def test_channel_getchannels_method(self):
-	# 	""" ensure that the methods works as expected"""
-
-	# 	second = PublicChannel(name='second')
-	# 	second.save()
-
-	# 	self.assertEqual(2, len(PublicChannel.getchannels()))
-	# 	second.delete()
-	# 	self.assertEqual(1, len(PublicChannel.getchannels()))
-	# 	self.assertEqual(self.channel1.name, PublicChannel.getchannels()[0])
+	@unittest.expectedFailure
+	def test_pair_doesnt_allow_duplicate_pairs(self):
+		""" ensure that if a pair(a,b) has been stored, then another 
+			pair(a,b) should not  be allowed to be stored
+		"""
+		Pair(person1=self.brian, person2=self.suzy).save()
 	
 	@unittest.expectedFailure
 	def test_pair_doesnt_allow_symmetric_pairs(self):
 		""" ensure that if a pair(a, b) is stored already, then a pair(b, a)
 			cannot also be be stored 
 		"""
-
 		# we already have a pair brian, suzy so creating a pair suzy, brian should be an error
 		Pair(person1=self.suzy, person2=self.brian).save()
+
+	def test_pair_uniqueness_works_for_both_persons(self):
+		""" ensure a pair is only considered unique as a pair, that is 
+			if there is a pair(a, b) then creating another pair(a, c) or
+			pair(d, b) is valid 
+		"""
+		yemi = User(username="yemi")
+		yemi.set_password("yemi")
+		yemi.save()
+
+		p1 = Pair(person1=self.brian, person2=yemi)
+		p1.save()
+		p2 = Pair(person1=yemi, person2=self.suzy)
+		p2.save()
+
+		self.assertIsNotNone(p1)
+		self.assertIsNotNone(p2)
 
 	def test_pair_getAPair_method_works_as_prescribed(self):
 		""" test that irrespective of order of users in the method it will
@@ -373,62 +386,6 @@ class AuthViewTests(Config):
 
 		self.assertEqual(response.status_code, 200)
 		
-
-
-
-# class ApiFunctionality(unittest.TestCase):
-
-# 	@classmethod
-# 	def setUpClass(self):
-# 		# configurations
-# 		app.config["TESTING"] = True
-# 		app.config["DEBUG"] = False
-# 		app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + TEST_DB
-# 		self.app = app.test_client()
-# 		db.drop_all()
-# 		db.create_all()
-
-
-# 		self.FOOD_ITEM = "soy_milk"
-# 		self.CATEGORY = "beverages"
-# 		self.SINGLE_FOOD_URL = "/api/foods/" + self.FOOD_ITEM
-# 		self.FOOD_BY_CATEGORY_URL = "/api/food_category/" + self.CATEGORY
-# 		self.ALL_FOODS_URL = "/api/foods"
-
-# 		category = Category(name=self.CATEGORY)
-# 		category.save()
-# 		food = Food(name=self.FOOD_ITEM, url="url", category_id=1, 
-# 			calories="123", carbs="678", protein="78", sugar="987",
-# 			fat="678", sodium="12")
-# 		food.save()
-
-# 	def test_index(self):
-# 		response = self.app.get("/", content_type="html/text")
-# 		self.assertEqual(response.status_code, 200)
-		
-# 	def test_single_food_request(self):
-# 		response = self.app.get(self.SINGLE_FOOD_URL)
-# 		self.assertEqual(response.status_code, 200)
-# 		self.assertIn(self.FOOD_ITEM.encode(), response.data)
-
-# 	def test_bad_single_food_request(self):
-# 		response = self.app.get(self.SINGLE_FOOD_URL + "bleh bleh")
-# 		self.assertEqual(response.status_code, 404)
-		
-# 	def test_category_request(self):
-# 		response = self.app.get(self.FOOD_BY_CATEGORY_URL)
-# 		self.assertEqual(response.status_code, 200)
-# 		self.assertIn(self.CATEGORY.encode(), response.data)
-
-# 	def test_bad_category_request(self):
-# 		response = self.app.get(self.FOOD_BY_CATEGORY_URL + "blehbleh")
-# 		self.assertEqual(response.status_code, 404)
-
-# 	def test_all_foods_request(self):
-# 		response = self.app.get(self.ALL_FOODS_URL)
-# 		self.assertEqual(response.status_code, 200)
-# 		self.assertIsNotNone(response.data)
-
 
 if __name__ == "__main__":
 	unittest.main()

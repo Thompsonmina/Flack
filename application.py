@@ -77,13 +77,16 @@ def logout():
 @login_required
 def client():
 	DEFAULTCHANNEL = "General"
+	
+	user = User.objects(username=current_user.username).get()
 	public_channels = PublicChannel.getchannels()
-	pairnames = current_user.pairnames
-	print(pairnames)
-	othernames = [current_user.getotherperson(x) for x in pairnames]
-	othernameAndPairname = zip(othernames, pairnames)
-	current_user.lastchannel = current_user.lastchannel if current_user.lastchannel in public_channels else DEFAULTCHANNEL
-	print(list(othernameAndPairname))
+	pairnames = user.pairnames
+
+	othernames = [user.getotherperson(x) for x in pairnames]
+	othernameAndPairname = list(zip(othernames, pairnames))
+	user.lastchannel = user.lastchannel if user.lastchannel in public_channels else DEFAULTCHANNEL
+	
+	print('pairnames', list(othernameAndPairname))
 	return render_template("newclient.html", public=public_channels, directs=othernameAndPairname)
 
 @app.route("/is_channel_valid")
@@ -106,6 +109,7 @@ def deletechannel():
 def getChats():
 	""" returns the messages that belongs to a channel if the 
 	channel is valid"""
+	print("getchats")
 	channel = request.form.get("channel")
 	ispublic = request.form.get("ispublic")
 	
@@ -121,10 +125,15 @@ def getChats():
 	else:
 		# fetch a Pair messages (direct messages)
 		print("entered private")
-		otheruser = User.objects(username=channel).first()
+		otheruser = current_user.getotherperson(channel)
+		print(otheruser)
+		otheruser = User.objects(username=otheruser).first()
+		print(otheruser)
 		if otheruser:
 			user = User.objects(username=current_user.username).get()
+			print('user', user)
 			pair = Pair.getAPair(user, otheruser)
+			print('pair', pair)
 			messages = pair.getChats()
 		else:
 			return jsonify({"success": False})
@@ -167,21 +176,23 @@ def createChannel(data):
 @socketio.on("add new private pair")
 def createADirectMessagePair(data):
 	""" listen on the add new private channel socket, add a new private channel to the server, store the members and emit the new channel"""
+	print('new dm create')
 	otheruser = data["name"]
 	otheruser = User.objects(username=otheruser).first()
-	
+	print('otheruser', otheruser)
 	if otheruser:
 		# fetching the user again because currentuser is not compatible with Pair
 		user = User.objects(username=current_user.username).get()
-		try:
-			pair = Pair(person1=user, person2=otheruser)
-			pair.save()
-			emit("show new private pair",{"pairname":pair.pairname},
-				broadcast=True
-			)
-			print(pair.pairname)
-		except:
-			emit("error", {"message": "pair already exists"})			
+		print(user)
+		#try:
+		pair = Pair(person1=user, person2=otheruser)
+		pair.save()
+		emit("show new private pair",{"pairname":pair.pairname},
+			broadcast=True
+		)
+		print(pair.pairname)
+		# except:
+		# 	emit("error", {"message": "pair already exists"})			
 	else:
 		emit("error", {"message": "pair not created"})
 
@@ -210,12 +221,16 @@ def addMessage(data):
 	message = data["message"]
 	channel = data["channel"]
 	typeOfchannel = data["type"]
-
-	# chat = Chat(message, time, user) # create a new chat with extracted details
 	
 	if typeOfchannel == "private":
+		otheruser = current_user.getotherperson(channel)
 		otheruser = User.objects(username=otheruser).first()
-		#	sender = 
+		if otheruser:
+			user = User.objects(username=current_user.username).get()
+			pair = Pair.getAPair(otheruser, user)
+			pair.addChat(sender=sender, message=message)
+			emit("show message", pair.getlastchat(), room=pair.pairname)
+
 	else:
 		channel = PublicChannel.objects(name=channel).first()
 		if channel:
@@ -224,7 +239,6 @@ def addMessage(data):
 			emit("show message", channel.getlastchat(), room=channel.name)
 
 	# emit the message to the client to be displayed to only those currently in the channel
-	print(channel.getlastchat())
 
 if __name__ == '__main__':
     socketio.run(app)

@@ -35,7 +35,8 @@ document.addEventListener("DOMContentLoaded", () =>
 	//	configure channel buttons to show chats on click when page is loaded
 	document.querySelectorAll(".private").forEach(a => {
 		a.onclick = function() {
-			getChats(socket, this.name, ispublic=false)
+			console.log('yippe kayeee')
+			getChats(socket, this.name, false)
 			}; 
 	});
 
@@ -99,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () =>
 		    		alert("channel name lenght has exceed limit");
 		    	}
 		    	else {
+		    		console.log("emmited cnpair")
 		    		socket.emit("add new private pair", {"name": name});
 		    		// fetch(`/is_channel_valid?channel=${channel}`)
 		    		// .then(response => response.json())
@@ -198,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () =>
 			// add the channel
 			const li = document.createElement("li")
 			li.appendChild(a)
-			document.querySelector(".directmessage-links").appendChild(li);	
+			document.querySelector(".directmessage-links").appendChild(li);
 		}		
 	});
 	socket.on("error", data => {
@@ -277,8 +279,18 @@ function showChats(channel, listOFMessages){
 		document.querySelector(".chat-box").innerHTML = "";
 	}
 
+	// if it contains a hyphen then its a user pair and we want the banner to be just the other guys name
+
+	let header = channel
+	if (channel.includes('-')){
+		pair = channel.split('-')
+		if (pair.includes(username)){
+			othername = (username === pair[0]) ? pair[1] : pair[0]
+			header = othername
+		}
+	}
 	// change name to reflect current channel
-	document.querySelector("#channelname-header").innerText = channel;
+	document.querySelector("#channelname-header").innerText = header;
 }
 
 // // displays a create private channel modal and retrieves a list of members and the channel name from the user
