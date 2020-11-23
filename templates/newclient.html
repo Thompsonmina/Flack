@@ -85,9 +85,9 @@
             <li>
                 <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Direct Messages</a>
                 <ul class="collapse list-unstyled directmessage-links" id="pageSubmenu">
-                    {% for name in directs %}
+                    {% for name, pairname in directs %}
                         <li>
-                            <a class="private"  name="{{ name }}" data-type="private" href="#">{{ name }}</a>
+                            <a class="private"  name="{{ pairname }}" data-type="private" href="#">{{ name }}</a>
                         </li>
                     {% endfor %}
                 </ul>

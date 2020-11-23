@@ -78,9 +78,13 @@ def logout():
 def client():
 	DEFAULTCHANNEL = "General"
 	public_channels = PublicChannel.getchannels()
-	directs = current_user.people
+	pairnames = current_user.pairnames
+	print(pairnames)
+	othernames = [current_user.getotherperson(x) for x in pairnames]
+	othernameAndPairname = zip(othernames, pairnames)
 	current_user.lastchannel = current_user.lastchannel if current_user.lastchannel in public_channels else DEFAULTCHANNEL
-	return render_template("newclient.html", public=public_channels, directs=directs)
+	print(list(othernameAndPairname))
+	return render_template("newclient.html", public=public_channels, directs=othernameAndPairname)
 
 @app.route("/is_channel_valid")
 def isChannelValid():
@@ -166,19 +170,18 @@ def createADirectMessagePair(data):
 	otheruser = data["name"]
 	otheruser = User.objects(username=otheruser).first()
 	
-	# fetching the user again because currentuser is not compatible with Pair
-	user = User.objects(username=current_user.username).get()
-
-	if otheruser and otheruser.username not in current_user.people:
-		pair = Pair(person1=user, person2=otheruser)
-		pair.save()
-		emit("show new private pair",{
-				"name": otheruser.username, 
-				"pair":[current_user.username,otheruser.username]
-				},
-			broadcast=True
-		)
-		print("dm created bro")
+	if otheruser:
+		# fetching the user again because currentuser is not compatible with Pair
+		user = User.objects(username=current_user.username).get()
+		try:
+			pair = Pair(person1=user, person2=otheruser)
+			pair.save()
+			emit("show new private pair",{"pairname":pair.pairname},
+				broadcast=True
+			)
+			print(pair.pairname)
+		except:
+			emit("error", {"message": "pair already exists"})			
 	else:
 		emit("error", {"message": "pair not created"})
 
@@ -211,16 +214,16 @@ def addMessage(data):
 	# chat = Chat(message, time, user) # create a new chat with extracted details
 	
 	if typeOfchannel == "private":
-		privateChannels[channel].addChat(chat)
+		otheruser = User.objects(username=otheruser).first()
+		#	sender = 
 	else:
 		channel = PublicChannel.objects(name=channel).first()
 		if channel:
 			# add chat to channel
 			channel.addChat(sender=sender, message=message)
-		print("message sent", channel)
+			emit("show message", channel.getlastchat(), room=channel.name)
 
 	# emit the message to the client to be displayed to only those currently in the channel
-	emit("show message", channel.getlastchat(), room=channel.name)
 	print(channel.getlastchat())
 
 if __name__ == '__main__':

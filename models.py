@@ -19,7 +19,7 @@ DEFAULTCHANNEL = "General"
 class User(UserMixin, db.Document):
 	username = db.StringField(required=True, unique=True)
 	password_hash = db.StringField(required=True)
-	people = db.ListField(db.StringField())
+	pairnames = db.ListField(db.StringField())
 	lastchannel = db.StringField(default=DEFAULTCHANNEL)
 
 	def set_password(self, password):
@@ -28,6 +28,14 @@ class User(UserMixin, db.Document):
 	def check_password(self, password):
 		""" check if the password is the correct one""" 	
 		return check_password_hash(self.password_hash, password)
+
+	def getotherperson(self, pairname):
+			other = None
+			both = pairname.split("-")		
+			if self.username in both:	
+				other = both[0] if both[0] != self.username else both[1]
+			
+			return other
 
 	def __str__(self):
 		return f"<{self.username}>"
@@ -78,6 +86,7 @@ class PublicChannel(db.Document):
 
 class Pair(db.Document):
 	""" a pair holds the chats between 2 people """
+	pairname = db.StringField()
 	chats = db.EmbeddedDocumentListField(Chat)
 	person1 = db.ReferenceField(User,
 					unique=True, 
@@ -98,10 +107,14 @@ class Pair(db.Document):
 		
 		return firstTry or lastTry
 
+	def generate_pairname(self):
+		return self.person1.username + "-" + self.person2.username
+
 	def save(self):
 		def addthemselves():
-			self.person1.people.append(self.person2.username)
-			self.person2.people.append(self.person1.username)
+			self.pairname = self.generate_pairname()
+			self.person1.pairnames.append(self.pairname)
+			self.person2.pairnames.append(self.pairname)
 			self.person1.save()
 			self.person2.save()
 
@@ -114,6 +127,15 @@ class Pair(db.Document):
 				raise Exception
 			
 		super().save()
+		
+	def delete(self):
+		x = self.person1.pairnames.index(self.pairname)
+		y = self.person2.pairnames.index(self.pairname)
+
+		self.person1.pairnames.pop(x)
+		self.person2.pairnames.pop(y)
+
+		super().delete()
 		
 	def addChat(self, **chatdict):
 		""" adds a single chat document to the lists of chats

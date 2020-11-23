@@ -181,12 +181,13 @@ document.addEventListener("DOMContentLoaded", () =>
 	socket.on("show new private pair", data => {
 		console.log(data, "new private channel emit")
 		// if the user is a member of the channel create a private channel button for the user
-		if (data.pair.includes(username)){
-			othername = (username === data.pair[0]) ? data.pair[1] : data.pair[0]
+		pair = data.pairname.split('-')
+		if (pair.includes(username)){
+			othername = (username === pair[0]) ? pair[1] : pair[0]
 
 			const a = document.createElement("a");
 			a.className = "private";
-			a.name =  othername;
+			a.name =  data.pairname;
 			a.innerText = othername;
 			a.setAttribute("data-type", "private")
 			
@@ -202,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () =>
 	});
 	socket.on("error", data => {
 		// log any emit error
-		console.log("error", edata.message)
+		console.log("error", data.message)
 	});
 
 });
