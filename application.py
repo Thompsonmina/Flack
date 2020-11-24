@@ -12,8 +12,10 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 app.config["MONGODB_SETTINGS"] = {
 	"db": "flack-2",
-	"connect": False
+	"connect": False,
+	'host': os.getenv("MONGO_URI")
 }
+
 db = MongoEngine(app)
 login_manager = LoginManager(app)
 socketio = SocketIO(app,  manage_session=False)
@@ -254,4 +256,4 @@ def addMessage(data):
 	# emit the message to the client to be displayed to only those currently in the channel
 
 if __name__ == '__main__':
-    socketio.run(app)
+    app.run()

@@ -96,16 +96,12 @@
         <ul class="list-unstyled components-bottom"> 
         	<li class=>
                 <!-- class="iconbutton" id="create-publicbtn" data-kind="public -->
-                <a href="#" id="create-public" data-kind="public">create channel</a>
-                
+                <a href="#" id="create-public" data-kind="public">create channel</a>       
             </li>
-
             <li class=>
                 <!-- class="iconbutton" id="create-publicbtn" data-kind="public -->
                 <a href="#" id="create-private" data-kind="private">Send a Dm</a>
-                
             </li>
-
             <li>
                 <a id="forget" href="{{ url_for('logout') }}">Log out</a>
             </li>
@@ -122,46 +118,10 @@
                 <i class="fas fa-bars"></i>
             </button>
             <h4 id="channelname-header"> {{ current_user.lastchannel }} </h4>
-        	
         </div>
 
         <div class="chat-box">
-       
-
-  <div class="media with ml-auto mb-3 pr-2">
-              <div class="media-body">
-                <p class="small text-muted">mina</p>
-                <div class="bg-primary rounded py-1 px-3 mb-2">
-                  <p class="text-small mb-0 text-white">isda h euef hfekjlklkjfdkljf </p>
-                </div>
-                <p class="small text-muted">094903</p>
-              </div>
-            </div>
- <!-- Reciever Message-->
-	        <div class="media with ml-auto mb-3 pr-2">
-              <p class="small text-muted">mina</p>
-	          <div class="media-body">
-	            <div class="bg-primary rounded py-2 px-3 mb-2">
-	              <p class="text-small mb-0 text-white">Apollo University, Delhi, India Test</p>
-	            </div>
-	            <p class="small text-muted">12:00 PM | Aug 13</p>
-	          </div>
-	        </div>
-
-	      
-	      
-	        <!-- Reciever Message-->
-	        <div class="media with ml-auto mb-3">
-	          <div class="media-body">
-	            <div class="bg-primary rounded py-2 px-3 mb-2">
-	              <p class="text-small mb-0 text-white">Apollo University, Delhi, India Test</p>
-	            </div>
-	            <p class="small text-muted">12:00 PM | Aug 13</p>
-	          </div>
-	        </div>
-
         </div>
-
       <!-- Typing area -->
       
       	<form id="sentmssg" action="" class="bg-light">
@@ -193,5 +153,4 @@
             });
         });
 </script>
-
 {% endblock %}
