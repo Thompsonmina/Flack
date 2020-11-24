@@ -22,6 +22,12 @@ class User(UserMixin, db.Document):
 	pairnames = db.ListField(db.StringField())
 	lastchannel = db.StringField(default=DEFAULTCHANNEL)
 
+	@classmethod
+	def getUsers(cls):
+		""" returns a list of all the public channel names"""
+		usernames = cls.objects.only('username')
+		return [user.username for user in usernames]
+
 	def set_password(self, password):
 		self.password_hash = generate_password_hash(password)
 

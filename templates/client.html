@@ -1,8 +1,7 @@
-{% extends "newlayout.html" %}
+{% extends "layout.html" %}
 
 
 {% block script %} 
-
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.6/handlebars.min.js" integrity="sha512-zT3zHcFYbQwjHdKjCu6OMmETx8fJA9S7E6W7kBeFxultf75OPTYUJigEKX58qgyQMi1m1EgenfjMXlRZG8BXaw==" crossorigin="anonymous"></script>
@@ -15,10 +14,10 @@
     {{#each messages}}
         {{#if (isCurrentUser this.sender) }}
             
-             <!-- Reciever Message-->
+             <!-- sender Message-->
             <div class="media with ml-auto mb-3 pr-2">
               <div class="media-body">
-                <div class="bg-primary rounded py-2 pl-2 pr-2 mb-2">
+                <div class="rounded py-2 pl-2 pr-2 mb-2" style="background-color: #7386d6">
                   <p class="text-small mb-0 text-white">{{ this.message }}</p>
                 </div>
                 <p class="small text-muted">{{this.date}}</p>
@@ -26,11 +25,11 @@
             </div>
 
         {{else}}
-          <!-- Sender Message-->
+          <!-- receiver Message-->
             <div class="media with mb-3">
               <div class="media-body ml-3">
                 <p class="small mb-0 text-muted">{{ this.sender }}</p>
-                <div class="bg-success rounded py-2 pl-2 pr-2 mb-2">
+                <div class="rounded py-2 pl-2 pr-2 mb-2" style="background-color: #4059a4">
                   <p class="text-small mb-0 text-white">{{ this.message }}</p>
                 </div>
                 <p class="small text-muted"> {{this.date}}</p>
@@ -41,17 +40,12 @@
     {% endraw -%}
 </template>
 
-<template id="addUserCheckboxes" type="text/x-handlebars-template">
-  {% raw -%}
-  {{#each users}}
-    
-    <div>
-      <input type="checkbox" name="members" value="{{ this }}">
-      <label for="{{ this }}">{{this}}</label>
-    </div>
-
-  {{/each}}
-  {% endraw -%}
+<template id="put-users" type="text/x-handlebars-template">
+    {% raw -%}
+    {{#each users}}
+         <option value="{{ this }}"> {{ this }}</option>
+    {{/each}}
+    {% endraw -%}
 </template>
 
 <script id="userinfo" data-username="{{ current_user.username }}" data-lastchannel="{{ current_user.lastchannel }}" data-ispublic="{{ ispublic }}"> </script>
@@ -73,7 +67,6 @@
             <li>
                 <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Public Channels</a>
                 <ul class="collapse list-unstyled channel-links" id="homeSubmenu">
-                    
                     {% for channel in public %}
                         <li>
                             <a class="public"  name="{{ channel }}" data-type="public" href="#">{{channel}}</a>
@@ -105,16 +98,13 @@
             <li>
                 <a id="forget" href="{{ url_for('logout') }}">Log out</a>
             </li>
-            <li>
-                <a href="{{ url_for('deletechannel') }}">Delete Profile</a>
-            </li>
         </ul>
 
     </nav>
     <!-- Page Content -->
     <div id="content">
         <div class='header d-flex flex-row'>
-        	<button type="button" id="sidebarCollapse" class="btn btn-info">
+        	<button type="button" id="sidebarCollapse" class="btn" style="background-color: #7386D5">
                 <i class="fas fa-bars"></i>
             </button>
             <h4 id="channelname-header"> {{ current_user.lastchannel }} </h4>
@@ -136,10 +126,40 @@
       	</form>
     </div>
 </div>
+
+
+<div class="modal" id="dm-users"  tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Send A Dm</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <div class="row">
+              <div class="col-12">
+                <select id="users-select" class="selectpicker" data-width="100%" data-header="Select a User">
+                    <option> goat</option>
+                </select>                  
+              </div>
+            </div>
+        </div> 
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="modal-confirm" style="background-color: #7386d6" class="btn">Select</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block endscript %}
-
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.18/dist/js/bootstrap-select.min.js"></script>
 <script type="text/javascript">
 	$(document).ready(function () {
             $("#sidebar").mCustomScrollbar({

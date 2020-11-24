@@ -84,68 +84,33 @@ document.addEventListener("DOMContentLoaded", () =>
 		    			else {
 		    				alert("the channel already exists");
 		    			}
-		 
 		    		})
 		    	}
 	    	};
 		
 		document.querySelector('#create-private').onclick = () => {
 
-		    	const name = prompt(`Enter username`);
-
-		    	if (name === ""){
-		    		alert("You didnt enter input");
-		    	}
-		    	else if (name.length > 15){ // set a chanenl name limit
-		    		alert("channel name lenght has exceed limit");
-		    	}
-		    	else {
-		    		console.log("emmited cnpair")
-		    		socket.emit("add new private pair", {"name": name});
-		    		// fetch(`/is_channel_valid?channel=${channel}`)
-		    		// .then(response => response.json())
-		    		// .then(data => {
-		    		// 	if (data.success){
-		    		// 		socket.emit("add newchannel", {"name": channel});
-		    		// 		console.log("emmited")
-		    		// 	}
-		    		// 	else {
-		    		// 		alert("the channel already exists");
-		    		// 	}
-		 
-		    		// })
-		    	}
+	    		fetch(`/getAllUsers`)
+	    		.then(response => response.json())
+	    		.then(data => {
+	    			if (data.success){
+	    				let users = data.users
+	    				renderModalAndEmitData(socket, users); 
+	    			}
+	    			else {
+	    				alert("omo something sup");
+	    			}
+	 
+	    		})	
 	    	};
-		
-		    	// 		// gets all the users of the app from the server, and uses them to display a create private channel modal
-		// 		// the modal is the interface allows you to create and add users to a private channel
-		// 		document.querySelector("#create-privatebtn").onclick = () => {
-		// 			const request = new XMLHttpRequest();
-		// 			request.open("POST", "/getUsers");
-
-		// 			// on load pass all the users to be displayed in the modal
-		// 			request.onload = () => {
-						
-		// 				const data = JSON.parse(request.responseText);
-		// 				users = data.users;
-
-		// 				// creates the modal and then retrievs and emits the relevant data to the server for private channel creation 
-		// 				renderModalAndEmitData(socket, users); 
-						
-		// 			}
-
-		// 			request.send()
-			    	
-		//       	};
-
-		// 	});
-
 	});  
 	
 
 	// wait for message that was typed  from server and show to only people currently on the channel
 	socket.on("show message", data => {
 		const singlemessagelist = [data];
+		singlemessagelist.map(x => x.date = luxon.DateTime.fromISO(x.date).toLocaleString(luxon.DateTime.DATETIME_MED))
+
 		// use the same template that handles a list of multiple chat dicts but this time passing only 1 item
 		const template = Handlebars.compile(document.querySelector("#chatstemplate").innerHTML);		
 		const message = template({"messages": singlemessagelist});
@@ -293,81 +258,29 @@ function showChats(channel, listOFMessages){
 	document.querySelector("#channelname-header").innerText = header;
 }
 
-// // displays a create private channel modal and retrieves a list of members and the channel name from the user
-// // it then emits the data to the server
-// function renderModalAndEmitData(socket, userlist) {
+// displays a select of all the users apart from the sender 
+// it then emits the person to be dmed to the server
+function renderModalAndEmitData(socket, userlist) {
 	
-// 	$("#modalLoginForm").modal("show"); // show modal
+	console.log(userlist, 'server list')
+	const template = Handlebars.compile(document.querySelector("#put-users").innerHTML);		
+	const users = template({"users": userlist});
+	console.log(users)
 
-// 	// compile template of users
-//     const template = Handlebars.compile(document.querySelector("#addUserCheckboxes").innerHTML);
-    
-//     // create html templates of users that is then added as checkboxes to the modal
-//     const usersChecks = template({"users": userlist});
-//     document.querySelector(".privatemembers").innerHTML = usersChecks
-  
-//     document.querySelector("#modal-confirm"). onclick = () => {
+	const select = document.querySelector("#users-select")
+	console.log(select)
+	select.innerHTML = users
+  	$("#dm-users").modal("show"); 	 // show modal
+	$('.selectpicker').selectpicker('refresh');
 
-//     	// get channel name and ensure it isn't blank
-//     	let privateChannelName = document.querySelector("#privateChannelName").value
+    document.querySelector("#modal-confirm"). onclick = () => {
 
-//     	if (privateChannelName === "")
-//     	{
-//     		return false;
-//     	}
+    	// get channel name and ensure it isn't blank
+    	let name = document.querySelector("#users-select").value;
 
-//     	// store the channel name as [channelname]-[itsposition] eg food-2 is the 3rd private channel with a name of food
-//     	// ensures that each private name is uniquely stored on the server even though it is repeated  
-//     	privateChannelName = privateChannelName +  "-" + String(channelOccurence(privateChannelName, "privateButtn")); 
-//     	console.log(privateChannelName)
-//     	// get all user boxes that was checked 
-//     	const members = document.querySelectorAll("input[name='members']:checked"); 
+      	$("#dm-users").modal("hide");
+		socket.emit("add new private pair", {"name": name});		
+		console.log("emmited cnpair")      
+    };
 
-//     	// store the names of the users that will be members of the private channel
-//     	const memberArray = []
-//      	members.forEach((chkbox) => {
-//         	memberArray.push(chkbox.value);
-//       	})
-//       	memberArray.push(username);
-//       	$("#modalLoginForm").modal("hide");
-      
-//       	privatechanneldata = {"members": memberArray, "name":privateChannelName};
-//       	console.log(privatechanneldata, "should be an object");
-// 		socket.emit("add new privatechannel", privatechanneldata);
-//     };
-
-// }
-
-// //gets all the private channels from the server that a user is on when the page is loaded
-// function showPrivateChannelsOnLoad(socket){
-
-// 	const request = new XMLHttpRequest();
-// 	request.open("POST", "/getPrivateChannels");
-
-// 	request.onload = () => {
-// 		// parse response
-// 		const data = JSON.parse(request.responseText)
-// 		const channels = data.channels;
-
-// 		//  display all the retrieved private channels from the dom
-// 		for ( const channel of channels) {
-
-// 			const buttn = document.createElement("button");
-// 			buttn.className = "buttn privateButtn";
-// 			buttn.name =  channel;
-// 			buttn.innerText = channel.replace(/-\d+$/, "");
-// 			buttn.setAttribute("data-type", "private")
-
-// 			// sets each new channel to get messages if clicked
-// 			buttn.onclick = function(){
-// 						getChats(socket, this.name, false)
-// 			};
-// 			document.querySelector(".privatechannelbuttons").append(buttn);
-// 		}					 
-		
-// 	}
-	
-// 	const data = new FormData();
-// 	data.append("user", username);
-// 	request.send(data);	
-
+}

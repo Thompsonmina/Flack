@@ -97,7 +97,7 @@ def client():
 		user.lastchannel = DEFAULTCHANNEL
 
 	print('pairnames', list(othernameAndPairname))
-	return render_template("newclient.html", public=public_channels, 
+	return render_template("client.html", public=public_channels, 
 								directs=othernameAndPairname,
 								ispublic=ispublic
 							)
@@ -112,10 +112,13 @@ def isChannelValid():
 	
 	return jsonify({"success": True})
 
-@app.route("/delete_channels")
-def deletechannel():
-	PublicChannel.objects.delete()
-	return jsonify({"success": True})
+@app.route("/getAllUsers")
+def getUsers():
+	""" returns all a list of the users registered """
+	users = User.getUsers()
+	users = [user for user in users if current_user.username != user]
+	print(users)
+	return jsonify({"success":True, "users":users})
 
 @app.route("/getChats", methods=["POST"])
 def getChats():
@@ -154,31 +157,6 @@ def getChats():
 		
 	# send the messages
 	return jsonify({"success": True, "messages":messages})
-
-# @app.route("/error")
-# def errorView():
-# 	return render_template("error.html")
-
-# @app.route("/getUsers", methods=["POST"])
-# def getUsers():
-# 	""" gets all the users registered on the app apart from the user making the request"""
-# 	otherusers = [user for user in users if user != session["username"]]
-# 	return jsonify({"users": otherusers})
-	
-# @app.route("/leave")
-# def delete():
-# 	""" remove the user from every private room and delete the user's session data"""
-# 	user = session["username"]
-# 	for channel in privateChannels.values():
-# 		if channel.isMember(user):
-# 			channel.removeMember(user)
-# 	try:
-# 	 	users.remove(user)
-# 	except Exception as e:
-# 	 	raise e
-# 	finally: 
-# 		session.clear()
-# 		return redirect("/")
 
 @socketio.on("add newchannel")
 def createChannel(data):
