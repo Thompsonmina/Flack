@@ -1,0 +1,16 @@
+language: python
+
+python:
+  - 3.8
+
+install:
+  - pip install -r requirements.txt
+  - pip install codecov
+
+script:
+  - python -m unittest discover
+  - coverage erase
+  - coverage run tests.py && coverage html
+
+after_success:
+  - codecov
