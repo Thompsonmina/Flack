@@ -13,7 +13,7 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["MONGODB_SETTINGS"] = {
 	"db": "flack-2",
 	"connect": False,
-	'host': os.getenv("MONGO_URI")
+	'host': os.getenv("MONGO_URI") if os.getenv("MONGO_URI") else 'mongodb://localhost'
 }
 
 db = MongoEngine(app)
