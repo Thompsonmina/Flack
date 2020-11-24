@@ -54,7 +54,7 @@
   {% endraw -%}
 </template>
 
-<script id="userinfo" data-username="{{ current_user.username }}" data-lastchannel="{{ current_user.lastchannel }}"> </script>
+<script id="userinfo" data-username="{{ current_user.username }}" data-lastchannel="{{ current_user.lastchannel }}" data-ispublic="{{ ispublic }}"> </script>
 <script src="{{ url_for('static', filename='newclient.js') }}"  type="text/javascript"></script>
 
 {% endblock %}

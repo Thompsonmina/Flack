@@ -1,8 +1,13 @@
 // global username and the last channel accessed 
-const username = document.querySelector("#userinfo").dataset.username
-let lastChannel = document.querySelector("#userinfo").dataset.lastchannel
+const username = document.querySelector("#userinfo").dataset.username;
+let lastChannel = document.querySelector("#userinfo").dataset.lastchannel;
+let ispublic = document.querySelector("#userinfo").dataset.ispublic;
 
-console.log(username, lastChannel)
+if (ispublic === "true"){
+	ispublic = true;
+}else{
+	ispublic = false;
+}
 
 // register a helper fumction to handlebar that helps to differientiate btw the user and others
 Handlebars.registerHelper("isCurrentUser", function(name)
@@ -18,13 +23,8 @@ document.addEventListener("DOMContentLoaded", () =>
 	// when logged out, clear local storage 
 
 	// display the chats of the last channel the user was on, on load
-	getChats(socket, lastChannel);
+	getChats(socket, lastChannel, ispublic);
 			
-	// show all the private channels a user belongs to on load
-	// the same thing is done for public channels but using jinja to display
-	// couldnt use jinja for the private channels because of the added complexity
-	//showPrivateChannelsOnLoad(socket)
-
 	//	configure channel buttons to show chats on click when page is loaded
 	document.querySelectorAll(".public").forEach(a => {
 		a.onclick = function() {

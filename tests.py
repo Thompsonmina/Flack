@@ -164,6 +164,7 @@ class PairModelTests(Config):
 		cls.suzy.save()
 
 		cls.pair = Pair(person1=cls.brian, person2=cls.suzy)
+		cls.pair.save()
 
 	def tearDown(self):
 		# delete all the other temp classes apart from the one

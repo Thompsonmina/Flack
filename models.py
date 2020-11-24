@@ -118,7 +118,6 @@ class Pair(db.Document):
 			self.pairname = self.generate_pairname()
 			self.person1.addToPairNames(self.pairname)
 			self.person2.addToPairNames(self.pairname)
-			self.person1.save()
 			self.person2.save()
 
 		if not self.hasBeenModified:
@@ -128,8 +127,11 @@ class Pair(db.Document):
 				addthemselves()
 			else:
 				raise Exception
-			
+		
 		super().save()
+		self.person1.save()
+		self.person2.save()
+
 		
 	def delete(self):
 		try:

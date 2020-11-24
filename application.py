@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 app.config["MONGODB_SETTINGS"] = {
-	"db": "flack",
+	"db": "flack-2",
 	"connect": False
 }
 db = MongoEngine(app)
@@ -84,10 +84,21 @@ def client():
 
 	othernames = [user.getotherperson(x) for x in pairnames]
 	othernameAndPairname = list(zip(othernames, pairnames))
-	user.lastchannel = user.lastchannel if user.lastchannel in public_channels else DEFAULTCHANNEL
-	
+
+	print(user.lastchannel)
+	ispublic = "true"
+	if user.lastchannel in public_channels:
+		pass
+	elif user.lastchannel in pairnames:
+		ispublic = "false"
+	else:
+		user.lastchannel = DEFAULTCHANNEL
+
 	print('pairnames', list(othernameAndPairname))
-	return render_template("newclient.html", public=public_channels, directs=othernameAndPairname)
+	return render_template("newclient.html", public=public_channels, 
+								directs=othernameAndPairname,
+								ispublic=ispublic
+							)
 
 @app.route("/is_channel_valid")
 def isChannelValid():
@@ -103,7 +114,6 @@ def isChannelValid():
 def deletechannel():
 	PublicChannel.objects.delete()
 	return jsonify({"success": True})
-
 
 @app.route("/getChats", methods=["POST"])
 def getChats():
@@ -134,6 +144,8 @@ def getChats():
 			print('user', user)
 			pair = Pair.getAPair(user, otheruser)
 			print('pair', pair)
+			current_user.lastchannel = pair.pairname
+			current_user.save()
 			messages = pair.getChats()
 		else:
 			return jsonify({"success": False})
@@ -184,15 +196,16 @@ def createADirectMessagePair(data):
 		# fetching the user again because currentuser is not compatible with Pair
 		user = User.objects(username=current_user.username).get()
 		print(user)
-		#try:
-		pair = Pair(person1=user, person2=otheruser)
-		pair.save()
-		emit("show new private pair",{"pairname":pair.pairname},
-			broadcast=True
-		)
-		print(pair.pairname)
-		# except:
-		# 	emit("error", {"message": "pair already exists"})			
+		try:
+			pair = Pair(person1=user, person2=otheruser)
+			pair.save()
+			emit("show new private pair",{"pairname":pair.pairname},
+				broadcast=True
+			)
+			print(pair.pairname)
+		except:
+			raise
+			emit("error", {"message": "pair already exists"})			
 	else:
 		emit("error", {"message": "pair not created"})
 
