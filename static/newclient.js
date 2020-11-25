@@ -2,7 +2,7 @@
 const username = document.querySelector("#userinfo").dataset.username;
 let lastChannel = document.querySelector("#userinfo").dataset.lastchannel;
 let ispublic = document.querySelector("#userinfo").dataset.ispublic;
-
+ 
 if (ispublic === "true"){
 	ispublic = true;
 }else{
@@ -19,7 +19,6 @@ Handlebars.registerHelper("isCurrentUser", function(name)
 document.addEventListener("DOMContentLoaded", () => 
 {
 	var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
-	console.log(socket)
 	// when logged out, clear local storage 
 
 	// display the chats of the last channel the user was on, on load
@@ -35,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () =>
 	//	configure channel buttons to show chats on click when page is loaded
 	document.querySelectorAll(".private").forEach(a => {
 		a.onclick = function() {
-			console.log('yippe kayeee')
 			getChats(socket, this.name, false)
 			}; 
 	});
@@ -44,12 +42,10 @@ document.addEventListener("DOMContentLoaded", () =>
 
 		const message = document.querySelector("#message").value;
 		// reset the textbox
-		document.querySelector("#message").value = "";
-		
+		document.querySelector("#message").value = "";		
 		if (message.length >= 1){  // send only if message is not blank
 			
 			// emit the single chat's details to the server
-			console.log("message", message);
 			const user = username;
 			a = document.getElementsByName(lastChannel)[0];
 			socket.emit("got a message", {"message":message, 
@@ -61,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () =>
 
 	// when connected configure
 	socket.on("connect", function() {
-		console.log("connected")
 		// when a create public button is clicked emit a new channel if it already doesnt exist
 		document.querySelector('#create-public').onclick = () => {
 
@@ -79,7 +74,6 @@ document.addEventListener("DOMContentLoaded", () =>
 		    		.then(data => {
 		    			if (data.success){
 		    				socket.emit("add newchannel", {"name": channel});
-		    				console.log("emmited")
 		    			}
 		    			else {
 		    				alert("the channel already exists");
@@ -88,24 +82,25 @@ document.addEventListener("DOMContentLoaded", () =>
 		    	}
 	    	};
 		
+		// when the send a dm button is clicked get a list of all the
+		// users to be rendered for the client to choose from
 		document.querySelector('#create-private').onclick = () => {
 
-	    		fetch(`/getAllUsers`)
-	    		.then(response => response.json())
-	    		.then(data => {
-	    			if (data.success){
-	    				let users = data.users
-	    				renderModalAndEmitData(socket, users); 
-	    			}
-	    			else {
-	    				alert("omo something sup");
-	    			}
-	 
-	    		})	
-	    	};
+    		fetch(`/getAllUsers`)
+    		.then(response => response.json())
+    		.then(data => {
+    			if (data.success){
+    				let users = data.users
+    				renderModalAndEmitData(socket, users); 
+    			}
+    			else {
+    				alert("omo something went wrong");
+    			}
+ 
+    		})	
+	    };
 	});  
 	
-
 	// wait for message that was typed  from server and show to only people currently on the channel
 	socket.on("show message", data => {
 		const singlemessagelist = [data];
@@ -115,10 +110,8 @@ document.addEventListener("DOMContentLoaded", () =>
 		const template = Handlebars.compile(document.querySelector("#chatstemplate").innerHTML);		
 		const message = template({"messages": singlemessagelist});
 			
-		console.log('got here boss')
 		// add the message to the chat window 
 		chatspace = document.querySelector(".chat-box")
-		console.log(chatspace)
 		chatspace.innerHTML += message; 
 		chatspace.scrollTop = chatspace.scrollHeight;
 
@@ -146,8 +139,8 @@ document.addEventListener("DOMContentLoaded", () =>
 
 	// wait for show new private pair event and add a dm pair link to those that have access
 	socket.on("show new private pair", data => {
-		console.log(data, "new private channel emit")
-		// if the user is a member of the channel create a private channel button for the user
+
+		// if the user is a member of the pair create a private channel button for the user
 		pair = data.pairname.split('-')
 		if (pair.includes(username)){
 			othername = (username === pair[0]) ? pair[1] : pair[0]
@@ -168,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () =>
 			document.querySelector(".directmessage-links").appendChild(li);
 		}		
 	});
+
 	socket.on("error", data => {
 		// log any emit error
 		console.log("error", data.message)
@@ -175,12 +169,14 @@ document.addEventListener("DOMContentLoaded", () =>
 
 });
 
+// helper function to facilitate leaving a socket room
 function leavechannel(socket, channel){
 
 	socket.emit("leave", {"channel": channel});
 
 }
 
+// helper function to facilitate joining a socket room
 function joinchannel(socket, channel){
 
 	socket.emit("join", {"channel":channel, "username":username});
@@ -214,7 +210,6 @@ function getChats(socket, channelname, ispublic = true){
 			showChats(channelname, messages)
 
 			// set last channel to the channel being clicked
-			console.log(channelname)
 			lastChannel = channelname						 
 		}
 		//refactor
@@ -225,8 +220,8 @@ function getChats(socket, channelname, ispublic = true){
 // displays chats on the window, takes a channel, and its messages as an arguement
 function showChats(channel, listOFMessages){
 
+	// format the iso time coming from the server into something readable
 	listOFMessages.map(x => x.date = luxon.DateTime.fromISO(x.date).toLocaleString(luxon.DateTime.DATETIME_MED))
-	console.log(listOFMessages)
 	// if the messages is not empty
 	if (listOFMessages.length > 0){
 
@@ -245,7 +240,6 @@ function showChats(channel, listOFMessages){
 	}
 
 	// if it contains a hyphen then its a user pair and we want the banner to be just the other guys name
-
 	let header = channel
 	if (channel.includes('-')){
 		pair = channel.split('-')
@@ -265,22 +259,21 @@ function renderModalAndEmitData(socket, userlist) {
 	console.log(userlist, 'server list')
 	const template = Handlebars.compile(document.querySelector("#put-users").innerHTML);		
 	const users = template({"users": userlist});
-	console.log(users)
 
 	const select = document.querySelector("#users-select")
-	console.log(select)
+
 	select.innerHTML = users
   	$("#dm-users").modal("show"); 	 // show modal
+  	// refresh modal so that the new templates can be found
 	$('.selectpicker').selectpicker('refresh');
 
     document.querySelector("#modal-confirm"). onclick = () => {
 
-    	// get channel name and ensure it isn't blank
+    	// get the name of the person the user wants dm
     	let name = document.querySelector("#users-select").value;
 
       	$("#dm-users").modal("hide");
-		socket.emit("add new private pair", {"name": name});		
-		console.log("emmited cnpair")      
+		socket.emit("add new private pair", {"name": name});		    
     };
 
 }
