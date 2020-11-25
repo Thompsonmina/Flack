@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () =>
 		    		alert("channel name lenght has exceed limit");
 		    	}
 		    	else {
-		    		fetch(`/is_channel_valid?channel=${channel}`)
+		    		fetch(`/isChannelValid?channel=${channel}`)
 		    		.then(response => response.json())
 		    		.then(data => {
 		    			if (data.success){

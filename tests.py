@@ -3,7 +3,28 @@
 import os 
 import unittest
 import mongomock
+from flask import request
+from flask_login import login_user
 from application import app, db, User, PublicChannel, Pair, url_for
+
+# use url_for on next iteration
+# flesh out helper function on next refactor
+class HelperFunctions():
+	@staticmethod
+	def createUser(name, password):
+		u = User(username=name)
+		u.set_password(password)
+		u.save()
+		return u
+
+	@staticmethod
+	def login(client, username, password):
+		return client.post('/', data=dict(username=username, 
+	    	password=password), follow_redirects=True)
+	@staticmethod
+	def logout(client):
+		return client.get('/logout', follow_redirects=True)
+ 
 
 class Config(unittest.TestCase):
 	@classmethod
@@ -18,11 +39,11 @@ class Config(unittest.TestCase):
 		
 	@classmethod
 	def tearDownClass(cls):
+		""" delete all the documents from the collections and disconnect """
 		User.objects.delete()
 		PublicChannel.objects.delete()
 		Pair.objects.delete()
 		db.disconnect()
-
 
 class UserModelTests(Config):
 	@classmethod
@@ -66,8 +87,6 @@ class UserModelTests(Config):
 		p.save()
 		self.assertEqual(billy.username, self.uche.getotherperson(p.pairname))
 		self.assertEqual(self.uche.username, billy.getotherperson(p.pairname))
-
-
 
 
 class PublicChannelModelTests(Config):
@@ -167,7 +186,7 @@ class PairModelTests(Config):
 		cls.pair.save()
 
 	def tearDown(self):
-		# delete all the other temp classes apart from the one
+		# delete all the other temp objects apart from the one
 		# crated at class scope
 		Pair.objects[1:].delete()
 		User.objects[2:].delete()
@@ -387,6 +406,132 @@ class AuthViewTests(Config):
 
 		self.assertEqual(response.status_code, 200)
 		
+class MainViewTests(Config):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+
+		cls.client = app.test_client()
+
+		cls.user1 = HelperFunctions.createUser("Thomas", "tracce")
+		cls.user2 = HelperFunctions.createUser("Tracee", "billy")
+
+		cls.public1 = PublicChannel(name="General")
+		cls.public1.save()
+		cls.public2 = PublicChannel(name="random")
+		cls.public2.save()
+
+		# urls 
+		cls.client_url = "/client"
+		cls.isChannelValid_url = "/isChannelValid"
+		cls.getUsers_url = "/getAllUsers"
+		cls.getChats_url = "/getChats"
+
+	def tearDown(self):
+		Pair.objects.delete()
+		HelperFunctions.logout(self.client)
+
+	def test_client_route(self):
+		""" ensure that the client route works """
+		with self.client:
+			HelperFunctions.login(self.client, self.user1.username, "tracce")
+			response = self.client.get(self.client_url)
+
+			self.assertEqual(response.status_code, 200)		
+			self.assertTrue(all([x.encode() in response.data  for x in [self.public1.name, self.public2.name]]))
+
+	def test_client_route_pairnames_show_if_they_exist(self):
+		""" ensure that the client route shows a pairname if a pair exoist on client """
+		with self.client:
+			Pair(person1=self.user1, person2=self.user2).save()
+			HelperFunctions.login(self.client, self.user1.username, "tracce")
+			response = self.client.get(self.client_url)
+
+			self.assertEqual(response.status_code, 200)		
+			self.assertIn(self.user2.username.encode(), response.data)
+
+	def test_client_route_doesnt_work_if_not_loggedIn(self):
+		""" ensure that no access is given to users not logged in """
+		with self.client:
+			response = self.client.get(self.client_url)
+
+			self.assertEqual(response.status_code, 401)		
+
+	def test_isChannelValid_route_works(self):
+		""" ensure that the route is successful if a channel is valid
+			channel is valid if it doesnt already exist
+		"""
+		response1 = self.client.get(self.isChannelValid_url + f"?channel={self.public2.name}")
+		json_data1 = response1.get_json()
+		# returns false because the channel exists
+		self.assertEqual(json_data1["success"], False)
+
+		response2 = self.client.get(self.isChannelValid_url + f"?channel=newchannel")
+		json_data2 = response2.get_json()
+		# returns True because the doesnt channel already exist
+		self.assertEqual(json_data2["success"], True)
+
+	def test_getUsers_route_works(self):
+		""" ensure that the getusers route works as expected """
+		HelperFunctions.login(self.client, self.user1.username, "tracce")
+
+		response = self.client.get(self.getUsers_url)
+		json_data = response.get_json()
+
+		self.assertIn(self.user2.username, json_data["users"])
+		self.assertNotIn(self.user1.username, json_data["users"])
+
+	def test_getChats_route_works_for_valid_publicchannels(self):
+		""" ensure that getchats route works as expected """
+		HelperFunctions.login(self.client, self.user1.username, "tracce")
+
+		chat = {"sender":"joe", "message":"this is message"}
+		self.public1.addChat(**chat)
+		self.public1.addChat(**chat)
+
+		data = {"channel":self.public1.name, "ispublic":"true"}
+		response = self.client.post(self.getChats_url, data=data)
+		json_data = response.get_json()
+	
+		self.assertEqual(json_data["success"], True)
+		self.assertEqual(2, len(json_data["messages"]))
+
+	def test_getChats_route_fails_for_invalid_publicchannel(self):
+		""" ensure that getchats route works as expected """
+		
+		data = {"channel":"invalidchannel", "ispublic":"true"}
+		response = self.client.post(self.getChats_url, data=data)
+		json_data = response.get_json()
+
+		self.assertEqual(json_data["success"], False)
+			
+	def test_getChats_route_works_for_valid_pairs(self):
+		""" ensure that getchats route works as expected """
+		HelperFunctions.login(self.client, self.user1.username, "tracce")
+
+		p =	Pair(person1=self.user1, person2=self.user2)
+		p.save()
+		
+		chat = {"sender":"joe", "message":"this is message"}
+		p.addChat(**chat)
+		p.addChat(**chat)
+
+		data = {"channel":p.pairname, "ispublic":"false"}
+		response = self.client.post(self.getChats_url, data=data)
+		json_data = response.get_json()
+
+		self.assertEqual(json_data["success"], True)
+		self.assertEqual(2, len(json_data["messages"]))
+
+	def test_getChats_route_fails_for_invalid_pairs(self):
+		""" ensure that getchats route works as expected """
+		HelperFunctions.login(self.client, self.user1.username, "tracce")
+
+		data = {"channel":"mandy", "ispublic":"false"}
+		response = self.client.post(self.getChats_url, data=data)
+		json_data = response.get_json()
+		
+		self.assertEqual(json_data["success"], False)
 
 if __name__ == "__main__":
 	unittest.main()
