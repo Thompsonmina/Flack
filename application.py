@@ -159,7 +159,9 @@ def createChannel(data):
 	""" listen on the add newchannel socket, add a new channel to server and emit the new channel"""
 	channel = data["name"]
 	channel = PublicChannel(name=channel).save()
-	emit("show newchannel", {"channel": channel.name}, broadcast=True)
+	emit("show newchannel", {"channel": channel.name, 
+				"event_sender":current_user.username},
+				broadcast=True)
 
 @socketio.on("add new private pair")
 def createADirectMessagePair(data):
@@ -173,8 +175,9 @@ def createADirectMessagePair(data):
 		try:
 			pair = Pair(person1=user, person2=otheruser)
 			pair.save()
-			emit("show new private pair",{"pairname":pair.pairname},
-				broadcast=True
+			emit("show new private pair",{"pairname":pair.pairname,
+					"event_sender":current_user.username},
+					broadcast=True
 			)
 			print(pair.pairname)
 		except:

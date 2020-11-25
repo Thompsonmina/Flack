@@ -135,6 +135,10 @@ document.addEventListener("DOMContentLoaded", () =>
 		const li = document.createElement("li")
 		li.appendChild(a)
 		document.querySelector(".channel-links").appendChild(li);
+
+		if (data.event_sender === username){
+			getChats(socket, data.channel)
+		}
 	});
 
 	// wait for show new private pair event and add a dm pair link to those that have access
@@ -159,6 +163,10 @@ document.addEventListener("DOMContentLoaded", () =>
 			const li = document.createElement("li")
 			li.appendChild(a)
 			document.querySelector(".directmessage-links").appendChild(li);
+
+			if (data.event_sender === username){
+				getChats(socket, data.pairname, false)
+			}
 		}		
 	});
 
