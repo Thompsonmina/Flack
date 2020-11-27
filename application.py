@@ -17,7 +17,11 @@ app.config["MONGODB_SETTINGS"] = {
 
 db = MongoEngine(app)
 login_manager = LoginManager(app)
-socketio = SocketIO(app,  manage_session=False)
+socketio = SocketIO(app, engineio_logger=True, 
+					logger=True,
+					manage_session=False, 
+					cors_allowed_origins="thompson-flack.herokuapp.com"
+				)
 
 from models import User, PublicChannel, Pair, Chat
 
