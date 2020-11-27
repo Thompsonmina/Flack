@@ -19,7 +19,7 @@ db = MongoEngine(app)
 login_manager = LoginManager(app)
 socketio = SocketIO(app,  manage_session=False)
 
-from models import User, PublicChannel, Pair
+from models import User, PublicChannel, Pair, Chat
 
 @app.route("/", methods=["GET", "POST"])
 def login():
