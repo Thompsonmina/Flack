@@ -20,7 +20,7 @@ login_manager = LoginManager(app)
 socketio = SocketIO(app, engineio_logger=True, 
 					logger=True,
 					manage_session=False, 
-					cors_allowed_origins="http://thompson-flack.herokuapp.com"
+					cors_allowed_origins="https://thompson-flack.herokuapp.com"
 				)
 
 from models import User, PublicChannel, Pair, Chat
