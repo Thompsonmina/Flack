@@ -80,7 +80,7 @@ class PublicChannel(db.Document):
 	def getlastchat(self):
 		""" returns the last added chat object as a dict"""
 		chat = self.chats[-1]
-		return {"sender":chat.sender, "date":chat.date.isoformat(), "message":chat.message}
+		return {"sender":chat.sender, "date":chat.date.isoformat() + "+00:00", "message":chat.message}
 
 	def getChats(self):
 		""" returns a sorted list of chat dicts"""
