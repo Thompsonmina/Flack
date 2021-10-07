@@ -10,7 +10,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, rooms
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["MONGODB_SETTINGS"] = {
-	"db": "flack-2",
+	"db": "flack",
 	"connect": False,
 	'host': os.getenv("MONGO_URI") if os.getenv("MONGO_URI") else 'mongodb://localhost'
 }
